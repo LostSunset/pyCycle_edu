@@ -22,13 +22,14 @@
 
 ## 分階段實作
 
-1. 建立 UI shell、參數表單、流程圖、結果卡片與雙語報告草稿。
-2. 將教學估算模型替換為 pyCycle wrapper。
-3. 將 `Reference_sources/` 的公開資料與 pyCycle 結果做比對。
-4. 匯出正體中文與英文報告。
+1. 建立可執行 PySide6 app，而不是 UI shell。
+2. 執行 upstream pyCycle `high_bypass_turbofan.py` 的精簡 wrapper。
+3. 保存 pyCycle 英文 viewer 報告並解析 performance rows。
+4. 將 `Reference_sources/` 的 CFM56-7B 公開資料與 pyCycle 結果做比對圖表。
+5. 匯出正體中文 Markdown 報告，並保留英文 viewer 報告。
 
 ## 注意事項
 
 - `upstream/pyCycle` 仍是唯讀 submodule。
-- 第一版 UI 的數值是教學估算，不能宣稱已完成 CFM56-7B 校正。
-- 真實驗證需在後續階段加入 pyCycle runner、來源對照與誤差表。
+- 第一版 app 已移除教學估算，改為執行 pyCycle wrapper。
+- 後續需加入更多同工況公開資料、誤差表與可匯出的 PDF/HTML 報告。

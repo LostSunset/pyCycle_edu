@@ -31,9 +31,15 @@
 
 ## PySide6 UI 工作台
 
-第一版 UI 使用 `PySide6`、`PySide6-Fluent-Widgets` 與 `pyqtgraph`，並套用 Claude 類型的米色、暖色、低對比、大字級設計。
+第一版 UI 使用 `PySide6`、`PySide6-Fluent-Widgets`、`pyqtgraph`、`OpenMDAO` 與唯讀 upstream pyCycle，並套用 Claude 類型的米色、暖色、低對比、大字級設計。
 
-安裝並啟動：
+建議使用 Python 3.12。第一次安裝：
+
+```powershell
+uv sync --python 3.12
+```
+
+啟動：
 
 ```powershell
 uv run pycycle-edu-ui
@@ -47,13 +53,21 @@ uv run python -m pycycle_edu_ui.main
 
 目前 UI 已包含：
 
-- 單軸高旁通比渦扇參數輸入。
-- 旁通比、總壓比、渦輪入口溫度、高度、馬赫數與質量流率。
-- 發動機流程圖、結果卡片、站點摘要表。
-- 旁通比與壓比掃描圖表。
-- 正體中文與英文報告草稿。
+- 執行 upstream `high_bypass_turbofan.py` 的精簡 wrapper。
+- 解析 pyCycle 英文 viewer 報告 `hbtf_view.out`。
+- 顯示 pyCycle DESIGN 與 OD performance points。
+- 將 BPR、OPR、推力、TSFC 與 CFM56-7B 公開資料做表格與圖表比對。
+- 產生正體中文 Markdown 報告，並保留 pyCycle 原始英文 viewer 報告。
 
-注意：第一版 UI 的數值是教學估算，用於驗證 UI/UX 流程；不能宣稱為已完成 CFM56-7B 校正。下一階段會新增 pyCycle wrapper，將 upstream 範例的計算結果回填到 UI。
+輸出位置：
+
+| 路徑 | 用途 |
+|---|---|
+| `Reference_answers/pycycle_ui_ux_reference/runs/` | 每次 pyCycle 執行的英文 viewer 報告。 |
+| `Reference_answers/pycycle_ui_ux_reference/reports/` | 正體中文比對報告。 |
+| `Reference_answers/pycycle_ui_ux_reference/screenshots/` | UI 檢查截圖。 |
+
+注意：目前 app 使用 pyCycle HBTF 範例與 CFM56-7B 公開資料做工程等級比對；這仍不能宣稱為已完成 CFM56-7B 原廠 engine deck 校正。
 
 ## 目前投影片
 

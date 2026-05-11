@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import math
-
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QAbstractSpinBox,
+    QApplication,
     QComboBox,
     QDoubleSpinBox,
     QFormLayout,
@@ -16,6 +15,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QPushButton,
     QPlainTextEdit,
+    QProgressBar,
     QSizePolicy,
     QStackedWidget,
     QTableWidget,
@@ -25,7 +25,9 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from pycycle_edu_ui.models import EngineCase, estimate_reference_result
+from pycycle_edu_ui.reference_data import CFM56_7B_REFERENCE, reference_by_key
+from pycycle_edu_ui.reports import build_chinese_report, save_chinese_report, select_design_point
+from pycycle_edu_ui.runner.hbtf_runner import PerformancePoint, PyCycleRunResult, run_high_bypass_turbofan
 from pycycle_edu_ui.widgets import FlowDiagram, MetricCard
 
 try:
@@ -44,8 +46,8 @@ class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle("pyCycle Edu Workbench")
-        self.case = EngineCase()
-        self.result = estimate_reference_result(self.case)
+        self.run_result: PyCycleRunResult | None = None
+        self.current_point: PerformancePoint | None = None
 
         self.stack = QStackedWidget()
         self.metric_cards: dict[str, MetricCard] = {}
@@ -62,7 +64,7 @@ class MainWindow(QMainWindow):
         self.stack.addWidget(self._build_workbench_page())
         self.stack.addWidget(self._build_results_page())
         self.stack.addWidget(self._build_report_page())
-        self._refresh_results()
+        self._refresh_empty_state()
 
     def _build_sidebar(self) -> QWidget:
         frame = QFrame()
@@ -92,7 +94,7 @@ class MainWindow(QMainWindow):
             layout.addWidget(button)
 
         layout.addStretch(1)
-        note = QLabel("資料來源先存 Reference_sources；答案與提示詞存 Reference_answers。")
+        note = QLabel("實戰 app、報告與圖表輸出都保存在 Reference_answers。來源資料保存在 Reference_sources。")
         note.setObjectName("HintText")
         note.setWordWrap(True)
         layout.addWidget(note)
@@ -104,9 +106,9 @@ class MainWindow(QMainWindow):
         layout.setContentsMargins(28, 24, 28, 24)
         layout.setSpacing(18)
 
-        title = QLabel("單軸高旁通比渦扇：教學 UI/UX 參考實作")
+        title = QLabel("CFM56-7B 對照用 pyCycle HBTF 實戰工作台")
         title.setObjectName("PageTitle")
-        hint = QLabel("第一版先以公開可查資料與 pyCycle 範例概念建立工作流；數值計算目前是 UI 教學估算，下一階段接上 pyCycle runner。")
+        hint = QLabel("按下執行後會跑 upstream pyCycle high_bypass_turbofan.py，解析英文 viewer 報告，並與 CFM56-7B 公開資料做圖表比對。")
         hint.setObjectName("HintText")
         hint.setWordWrap(True)
         layout.addWidget(title)
@@ -127,46 +129,45 @@ class MainWindow(QMainWindow):
         layout.setContentsMargins(20, 18, 20, 18)
         layout.setSpacing(14)
 
-        title = QLabel("發動機參數")
+        title = QLabel("pyCycle 執行")
         title.setObjectName("SectionTitle")
         layout.addWidget(title)
 
-        family = QComboBox()
-        family.addItems(["CFM56-7B 教學近似案例", "pyCycle high_bypass_turbofan 範例"])
-        layout.addWidget(family)
+        info = QLabel(
+            "目前實戰 app 會直接執行 upstream/pyCycle/example_cycles/high_bypass_turbofan.py。"
+            "這是 pyCycle 自帶高旁通比渦扇範例；本專案只讀取它，不修改 upstream。"
+        )
+        info.setObjectName("HintText")
+        info.setWordWrap(True)
+        layout.addWidget(info)
 
-        form = QFormLayout()
-        form.setLabelAlignment(Qt.AlignmentFlag.AlignLeft)
-        form.setFormAlignment(Qt.AlignmentFlag.AlignTop)
-        self.inputs = {
-            "bypass_ratio": self._spin(0.5, 16.0, self.case.bypass_ratio, 0.1),
-            "overall_pressure_ratio": self._spin(5.0, 60.0, self.case.overall_pressure_ratio, 0.5),
-            "turbine_inlet_temperature_k": self._spin(1000.0, 2100.0, self.case.turbine_inlet_temperature_k, 10.0),
-            "altitude_ft": self._spin(0.0, 45000.0, self.case.altitude_ft, 500.0),
-            "mach": self._spin(0.0, 0.95, self.case.mach, 0.01),
-            "mass_flow_lb_s": self._spin(100.0, 1800.0, self.case.mass_flow_lb_s, 10.0),
-        }
-        labels = {
-            "bypass_ratio": "旁通比 BPR",
-            "overall_pressure_ratio": "總壓比 OPR",
-            "turbine_inlet_temperature_k": "渦輪入口溫度 K",
-            "altitude_ft": "高度 ft",
-            "mach": "馬赫數",
-            "mass_flow_lb_s": "質量流率 lb/s",
-        }
-        for key, widget in self.inputs.items():
-            form.addRow(labels[key], widget)
-            widget.valueChanged.connect(self._handle_case_changed)
-        layout.addLayout(form)
-
-        run_button = PrimaryPushButton("更新教學估算")
+        run_button = PrimaryPushButton("執行 pyCycle HBTF")
         run_button.setObjectName("PrimaryButton")
-        run_button.clicked.connect(self._handle_case_changed)
+        run_button.clicked.connect(self._run_pycycle)
         layout.addWidget(run_button)
 
-        pycycle_button = PushButton("下一階段：連接 pyCycle runner")
-        pycycle_button.clicked.connect(self._show_runner_message)
-        layout.addWidget(pycycle_button)
+        zh_button = PushButton("產生正體中文報告")
+        zh_button.clicked.connect(self._save_chinese_report)
+        layout.addWidget(zh_button)
+
+        self.progress = QProgressBar()
+        self.progress.setRange(0, 1)
+        self.progress.setValue(0)
+        layout.addWidget(self.progress)
+
+        self.run_status = QLabel("尚未執行。")
+        self.run_status.setObjectName("HintText")
+        self.run_status.setWordWrap(True)
+        layout.addWidget(self.run_status)
+
+        source_title = QLabel("比對來源")
+        source_title.setObjectName("SectionTitle")
+        layout.addWidget(source_title)
+        for metric in CFM56_7B_REFERENCE:
+            label = QLabel(f"{metric.zh_name}: {metric.value:g} {metric.unit}")
+            label.setObjectName("HintText")
+            label.setWordWrap(True)
+            layout.addWidget(label)
 
         layout.addStretch(1)
         return panel
@@ -186,10 +187,10 @@ class MainWindow(QMainWindow):
         grid = QGridLayout()
         grid.setSpacing(12)
         specs = [
-            ("thrust", "淨推力", "--", "lbf"),
+            ("thrust", "pyCycle 淨推力", "--", "lbf"),
             ("tsfc", "TSFC", "--", "lb/lbf/hr"),
-            ("fuel", "燃油流量", "--", "lb/hr"),
-            ("eff", "推進效率", "--", ""),
+            ("opr", "OPR", "--", ""),
+            ("bpr", "BPR", "--", ""),
         ]
         for index, (key, title_text, value, unit) in enumerate(specs):
             card = MetricCard(title_text, value, unit)
@@ -197,8 +198,8 @@ class MainWindow(QMainWindow):
             grid.addWidget(card, index // 2, index % 2)
         layout.addLayout(grid)
 
-        table = QTableWidget(6, 3)
-        table.setHorizontalHeaderLabels(["站點", "意義", "教學輸出"])
+        table = QTableWidget(0, 5)
+        table.setHorizontalHeaderLabels(["項目", "pyCycle", "CFM56-7B 參考", "單位", "判讀"])
         table.verticalHeader().setVisible(False)
         table.horizontalHeader().setStretchLastSection(True)
         table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
@@ -217,12 +218,13 @@ class MainWindow(QMainWindow):
         layout.addWidget(title)
 
         tabs = QTabWidget()
-        tabs.addTab(self._build_plot_panel("bpr"), "旁通比掃描")
-        tabs.addTab(self._build_plot_panel("opr"), "壓比掃描")
+        self.comparison_plot_panel = self._build_comparison_plot_panel()
+        tabs.addTab(self.comparison_plot_panel, "CFM56-7B 比對圖")
+        tabs.addTab(self._build_points_table_panel(), "pyCycle 工作點")
         layout.addWidget(tabs, 1)
         return page
 
-    def _build_plot_panel(self, mode: str) -> QWidget:
+    def _build_comparison_plot_panel(self) -> QWidget:
         panel = QFrame()
         panel.setObjectName("Panel")
         layout = QVBoxLayout(panel)
@@ -234,29 +236,25 @@ class MainWindow(QMainWindow):
             layout.addWidget(label)
             return panel
 
-        plot = pg.PlotWidget()
-        plot.setBackground("#FFFCF6")
-        plot.showGrid(x=True, y=True, alpha=0.25)
-        plot.addLegend()
-        pen_thrust = pg.mkPen("#B86B32", width=3)
-        pen_tsfc = pg.mkPen("#487A5E", width=3)
+        self.comparison_plot = pg.PlotWidget()
+        self.comparison_plot.setBackground("#FFFCF6")
+        self.comparison_plot.showGrid(x=True, y=True, alpha=0.25)
+        self.comparison_plot.addLegend()
+        self.comparison_plot.setLabel("bottom", "比對項目")
+        self.comparison_plot.setLabel("left", "正規化數值")
+        layout.addWidget(self.comparison_plot)
+        return panel
 
-        if mode == "bpr":
-            x_values = [3.0 + index * 0.5 for index in range(19)]
-            x_label = "BPR"
-            cases = [EngineCase(bypass_ratio=x, overall_pressure_ratio=self.case.overall_pressure_ratio) for x in x_values]
-        else:
-            x_values = [18 + index * 2 for index in range(19)]
-            x_label = "OPR"
-            cases = [EngineCase(bypass_ratio=self.case.bypass_ratio, overall_pressure_ratio=x) for x in x_values]
-
-        thrust = [estimate_reference_result(case).net_thrust_lbf / 1000.0 for case in cases]
-        tsfc = [estimate_reference_result(case).tsfc_lb_lbf_hr for case in cases]
-        plot.plot(x_values, thrust, pen=pen_thrust, name="淨推力 klbf")
-        plot.plot(x_values, tsfc, pen=pen_tsfc, name="TSFC")
-        plot.setLabel("bottom", x_label)
-        plot.setLabel("left", "教學估算")
-        layout.addWidget(plot)
+    def _build_points_table_panel(self) -> QWidget:
+        panel = QFrame()
+        panel.setObjectName("Panel")
+        layout = QVBoxLayout(panel)
+        layout.setContentsMargins(18, 18, 18, 18)
+        self.points_table = QTableWidget(0, 8)
+        self.points_table.setHorizontalHeaderLabels(["Point", "Mach", "Alt ft", "Fn", "Fg", "OPR", "TSFC", "BPR"])
+        self.points_table.verticalHeader().setVisible(False)
+        self.points_table.horizontalHeader().setStretchLastSection(True)
+        layout.addWidget(self.points_table)
         return panel
 
     def _build_report_page(self) -> QWidget:
@@ -265,7 +263,7 @@ class MainWindow(QMainWindow):
         layout.setContentsMargins(28, 24, 28, 24)
         layout.setSpacing(18)
 
-        title = QLabel("正體中文 / English 報告草稿")
+        title = QLabel("正體中文報告與 pyCycle 英文 viewer")
         title.setObjectName("PageTitle")
         layout.addWidget(title)
 
@@ -274,11 +272,11 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.report_text, 1)
 
         row = QHBoxLayout()
-        zh_button = PrimaryPushButton("產生正體中文摘要")
+        zh_button = PrimaryPushButton("儲存正體中文報告")
         zh_button.setObjectName("PrimaryButton")
-        en_button = PushButton("Generate English Summary")
-        zh_button.clicked.connect(lambda: self._write_report("zh"))
-        en_button.clicked.connect(lambda: self._write_report("en"))
+        en_button = PushButton("顯示英文 viewer 路徑")
+        zh_button.clicked.connect(self._save_chinese_report)
+        en_button.clicked.connect(self._show_english_report_message)
         row.addWidget(zh_button)
         row.addWidget(en_button)
         row.addStretch(1)
@@ -294,70 +292,106 @@ class MainWindow(QMainWindow):
         spin.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.UpDownArrows)
         return spin
 
-    def _handle_case_changed(self) -> None:
-        self.case = EngineCase(
-            bypass_ratio=self.inputs["bypass_ratio"].value(),
-            overall_pressure_ratio=self.inputs["overall_pressure_ratio"].value(),
-            turbine_inlet_temperature_k=self.inputs["turbine_inlet_temperature_k"].value(),
-            altitude_ft=self.inputs["altitude_ft"].value(),
-            mach=self.inputs["mach"].value(),
-            mass_flow_lb_s=self.inputs["mass_flow_lb_s"].value(),
-        )
-        self.result = estimate_reference_result(self.case)
+    def _run_pycycle(self) -> None:
+        self.progress.setRange(0, 0)
+        self.run_status.setText("正在執行 pyCycle high_bypass_turbofan.py，請稍候...")
+        QApplication.processEvents()
+        result = run_high_bypass_turbofan()
+        self.run_result = result
+        self.current_point = select_design_point(result.points)
+        self.progress.setRange(0, 1)
+        self.progress.setValue(1 if result.ok else 0)
+        if result.ok:
+            self.run_status.setText(f"完成：解析 {len(result.points)} 個 pyCycle performance points。英文報告：{result.english_report}")
+        else:
+            self.run_status.setText(f"執行失敗：{result.error}\n{result.stderr[-900:]}")
         self._refresh_results()
 
     def _refresh_results(self) -> None:
-        result = self.result
-        self.metric_cards["thrust"].set_value(f"{result.net_thrust_lbf:,.0f}", "lbf")
-        self.metric_cards["tsfc"].set_value(f"{result.tsfc_lb_lbf_hr:.3f}", "lb/lbf/hr")
-        self.metric_cards["fuel"].set_value(f"{result.fuel_flow_lb_hr:,.0f}", "lb/hr")
-        self.metric_cards["eff"].set_value(f"{result.propulsive_efficiency:.2%}", "")
+        point = self.current_point
+        if point is None:
+            self._refresh_empty_state()
+            return
+        self.metric_cards["thrust"].set_value(f"{point.net_thrust_lbf:,.0f}", "lbf")
+        self.metric_cards["tsfc"].set_value(f"{point.tsfc:.5f}", "lb/lbf/hr")
+        self.metric_cards["opr"].set_value(f"{point.overall_pressure_ratio:.2f}", "")
+        self.metric_cards["bpr"].set_value(f"{point.bypass_ratio:.3f}", "")
 
+        refs = reference_by_key()
         rows = [
-            ("0", "飛行環境", f"高度 {self.case.altitude_ft:,.0f} ft, Mach {self.case.mach:.2f}"),
-            ("2", "風扇出口", f"FPR {result.fan_pressure_ratio:.2f}"),
-            ("3", "壓縮機出口", f"OPR {self.case.overall_pressure_ratio:.1f}"),
-            ("4", "燃燒室出口", f"Tt4 {self.case.turbine_inlet_temperature_k:.0f} K"),
-            ("5", "渦輪出口", f"Tt5 {result.core_exit_temp_k:.0f} K"),
-            ("8", "噴嘴/性能", f"Thrust {result.net_thrust_lbf:,.0f} lbf"),
+            ("BPR", f"{point.bypass_ratio:.3f}", f"{refs['bypass_ratio'].value:.1f}", "-", "設計點量級可直接比對"),
+            ("OPR", f"{point.overall_pressure_ratio:.3f}", f"{refs['overall_pressure_ratio'].value:.1f}", "-", "受範例假設影響，做量級檢查"),
+            ("巡航 Fn", f"{point.net_thrust_lbf:,.1f}", "19,500-27,300", "lbf", "pyCycle 為巡航點；參考值為海平面靜推力"),
+            ("TSFC", f"{point.tsfc:.5f}", "公開資料依工況不同", "lb/lbf/hr", "需後續加入同工況資料才可嚴格驗證"),
+            ("Fan diameter", "pyCycle 範例未輸出", "61", "in", "保留為來源對照，不畫誤差"),
         ]
+        self.station_table.setRowCount(len(rows))
         for row_index, row in enumerate(rows):
             for column, text in enumerate(row):
                 item = QTableWidgetItem(text)
                 item.setFlags(item.flags() ^ Qt.ItemFlag.ItemIsEditable)
                 self.station_table.setItem(row_index, column, item)
         self.station_table.resizeColumnsToContents()
-        if hasattr(self, "report_text"):
-            self._write_report("zh")
+        self._refresh_points_table()
+        self._refresh_comparison_plot()
+        if hasattr(self, "report_text") and self.run_result:
+            self.report_text.setPlainText(build_chinese_report(self.run_result))
 
-    def _write_report(self, language: str) -> None:
-        if language == "en":
-            text = (
-                "pyCycle Edu reference report\n\n"
-                f"Engine case: {self.case.engine_name}\n"
-                f"Bypass ratio: {self.case.bypass_ratio:.2f}\n"
-                f"Overall pressure ratio: {self.case.overall_pressure_ratio:.1f}\n"
-                f"Estimated net thrust: {self.result.net_thrust_lbf:,.0f} lbf\n"
-                f"Estimated TSFC: {self.result.tsfc_lb_lbf_hr:.3f} lb/lbf/hr\n\n"
-                "Note: this screen currently uses a teaching placeholder model. "
-                "The next milestone will connect the UI to a pyCycle example problem and compare against curated reference sources."
-            )
-        else:
-            text = (
-                "pyCycle Edu 參考報告\n\n"
-                f"發動機案例：{self.case.engine_name}\n"
-                f"旁通比：{self.case.bypass_ratio:.2f}\n"
-                f"總壓比：{self.case.overall_pressure_ratio:.1f}\n"
-                f"估算淨推力：{self.result.net_thrust_lbf:,.0f} lbf\n"
-                f"估算 TSFC：{self.result.tsfc_lb_lbf_hr:.3f} lb/lbf/hr\n\n"
-                "注意：目前此畫面使用教學用估算模型。下一個里程碑會接上 pyCycle 範例問題，"
-                "並與 Reference_sources 中整理的公開資料比對。"
-            )
-        self.report_text.setPlainText(text)
+    def _refresh_empty_state(self) -> None:
+        for key in ["thrust", "tsfc", "opr", "bpr"]:
+            if key in self.metric_cards:
+                self.metric_cards[key].set_value("--", "")
+        if hasattr(self, "station_table"):
+            self.station_table.setRowCount(0)
 
-    def _show_runner_message(self) -> None:
-        QMessageBox.information(
-            self,
-            "下一階段",
-            "下一階段會新增 pyCycle runner：從 UI 參數建立 pyCycle problem，執行後回填表格、圖表與雙語報告。",
-        )
+    def _refresh_points_table(self) -> None:
+        if not hasattr(self, "points_table") or self.run_result is None:
+            return
+        points = self.run_result.points
+        self.points_table.setRowCount(len(points))
+        for row_index, point in enumerate(points):
+            values = [
+                point.point,
+                f"{point.mach:.3f}",
+                f"{point.altitude_ft:,.0f}",
+                f"{point.net_thrust_lbf:,.1f}",
+                f"{point.gross_thrust_lbf:,.1f}",
+                f"{point.overall_pressure_ratio:.3f}",
+                f"{point.tsfc:.5f}",
+                f"{point.bypass_ratio:.3f}",
+            ]
+            for column, value in enumerate(values):
+                item = QTableWidgetItem(value)
+                item.setFlags(item.flags() ^ Qt.ItemFlag.ItemIsEditable)
+                self.points_table.setItem(row_index, column, item)
+        self.points_table.resizeColumnsToContents()
+
+    def _refresh_comparison_plot(self) -> None:
+        if pg is None or not hasattr(self, "comparison_plot") or self.current_point is None:
+            return
+        self.comparison_plot.clear()
+        refs = reference_by_key()
+        labels = ["BPR", "OPR"]
+        pycycle_values = [self.current_point.bypass_ratio, self.current_point.overall_pressure_ratio]
+        ref_values = [refs["bypass_ratio"].value, refs["overall_pressure_ratio"].value]
+        x1 = [1, 3]
+        x2 = [1.6, 3.6]
+        self.comparison_plot.addLegend()
+        self.comparison_plot.plot(x1, pycycle_values, pen=None, symbol="o", symbolSize=16, symbolBrush="#B86B32", name="pyCycle")
+        self.comparison_plot.plot(x2, ref_values, pen=None, symbol="s", symbolSize=16, symbolBrush="#487A5E", name="CFM56-7B reference")
+        axis = self.comparison_plot.getAxis("bottom")
+        axis.setTicks([[(1.3, labels[0]), (3.3, labels[1])]])
+
+    def _save_chinese_report(self) -> None:
+        if self.run_result is None:
+            QMessageBox.warning(self, "尚未執行", "請先執行 pyCycle HBTF。")
+            return
+        output = save_chinese_report(self.run_result)
+        self.report_text.setPlainText(build_chinese_report(self.run_result))
+        QMessageBox.information(self, "已儲存", f"正體中文報告已儲存：\n{output}")
+
+    def _show_english_report_message(self) -> None:
+        if self.run_result is None:
+            QMessageBox.warning(self, "尚未執行", "請先執行 pyCycle HBTF。")
+            return
+        QMessageBox.information(self, "pyCycle 英文 viewer", str(self.run_result.english_report))

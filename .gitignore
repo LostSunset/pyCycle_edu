@@ -1,4 +1,5 @@
 .venv/
+.venv-pycycle312/
 __pycache__/
 *.py[cod]
 *.pyo
