@@ -1,0 +1,3 @@
+[submodule "upstream/pyCycle"]
+	path = upstream/pyCycle
+	url = https://github.com/OpenMDAO/pyCycle.git
