@@ -21,11 +21,39 @@
 |---|---|
 | `upstream/pyCycle/` | upstream pyCycle submodule，只能唯讀參考。除非明確要求同步 upstream，否則不得修改或更新 gitlink。 |
 | `Reference_sources/` | 外部參考來源、來源清單與資料治理規則。 |
+| `Reference_answers/` | 課程參考答案、階段提示詞、預期輸出與 UI/UX 參考實作說明。 |
+| `src/pycycle_edu_ui/` | PySide6 教學工作台。第一版先提供 UI/UX 與教學估算，後續再接 pyCycle runner。 |
 | `docs/slides/` | 教學投影片產生器、PPTX、視覺檢查預覽圖與本地圖片素材。 |
 | `docs/dev-log/` | 有意義開發工作的必要紀錄。 |
 | `docs/research/` | 研究目標與教學/研究進度紀錄。 |
 | `docs/sessions/` | 每次工作階段的交接摘要。 |
 | `scripts/` | repository 維護與驗證腳本。 |
+
+## PySide6 UI 工作台
+
+第一版 UI 使用 `PySide6`、`PySide6-Fluent-Widgets` 與 `pyqtgraph`，並套用 Claude 類型的米色、暖色、低對比、大字級設計。
+
+安裝並啟動：
+
+```powershell
+uv run pycycle-edu-ui
+```
+
+也可以從模組啟動：
+
+```powershell
+uv run python -m pycycle_edu_ui.main
+```
+
+目前 UI 已包含：
+
+- 單軸高旁通比渦扇參數輸入。
+- 旁通比、總壓比、渦輪入口溫度、高度、馬赫數與質量流率。
+- 發動機流程圖、結果卡片、站點摘要表。
+- 旁通比與壓比掃描圖表。
+- 正體中文與英文報告草稿。
+
+注意：第一版 UI 的數值是教學估算，用於驗證 UI/UX 流程；不能宣稱為已完成 CFM56-7B 校正。下一階段會新增 pyCycle wrapper，將 upstream 範例的計算結果回填到 UI。
 
 ## 目前投影片
 
@@ -88,4 +116,3 @@ npx gitnexus analyze --embeddings
 
 目前專案還沒有版本檔、tag 規範或 Release policy。
 目前工作屬於教材與文件準備，因此需要 commit/push，但不需要發 GitHub Release；若未來加入版本規則，再依規則判斷是否發布 Release。
-
