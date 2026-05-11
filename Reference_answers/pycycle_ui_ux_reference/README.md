@@ -1,6 +1,6 @@
 # pyCycle UI/UX Reference Answer
 
-本資料夾保存一個可實戰執行的 PySide6 參考 app。它會執行 upstream pyCycle 的高旁通比渦扇範例、保存 pyCycle 英文 viewer 報告、解析 performance data，並與 CFM56-7B 公開資料做圖表與正體中文報告比對。
+本資料夾保存一個可執行的 PySide6 工程分析參考 app。它會執行 upstream pyCycle 的高旁通比渦扇範例、保存 pyCycle 英文 viewer 報告、解析 performance data，並與 CFM56-7B 公開資料做圖表與正體中文報告比對。
 
 ## 第一階段目標
 
@@ -9,6 +9,8 @@
 - 套用適合工程教學的 UI 模板與 Claude 米色風格。
 - 使用 `pyqtgraph` 顯示 CFM56-7B 比對圖。
 - 執行 upstream `high_bypass_turbofan.py` 的精簡 wrapper。
+- 使用 Ribbon 風格操作列與工程參數輸入框。
+- 使用背景 thread 執行 pyCycle，避免 UI 在求解期間停止回應。
 - 產生 pyCycle 英文 viewer 報告與正體中文 Markdown 報告。
 
 ## UI 應具備的區域
@@ -31,7 +33,8 @@ uv run pycycle-edu-ui
 |---|---|
 | `runs/20260511-155126/hbtf_view.out` | pyCycle 英文 viewer 報告。 |
 | `reports/hbtf_cfm56_7b_report_zh_20260511-155219.md` | 正體中文比對報告。 |
-| `screenshots/main_window_after_pycycle.png` | 執行 pyCycle 後的 UI 截圖。 |
+| `screenshots/ribbon_ui_offscreen.png` | Ribbon 介面初始畫面檢查。 |
+| `screenshots/ribbon_ui_after_run.png` | 背景執行 pyCycle 後的 Ribbon UI 截圖。 |
 
 如果需要直接從模組啟動：
 
@@ -46,4 +49,6 @@ uv run python -m pycycle_edu_ui.main
 ```text
 Reference_answers/pycycle_ui_ux_reference/screenshots/main_window_offscreen.png
 Reference_answers/pycycle_ui_ux_reference/screenshots/main_window_after_pycycle.png
+Reference_answers/pycycle_ui_ux_reference/screenshots/ribbon_ui_offscreen.png
+Reference_answers/pycycle_ui_ux_reference/screenshots/ribbon_ui_after_run.png
 ```

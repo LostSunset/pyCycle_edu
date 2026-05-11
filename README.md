@@ -53,7 +53,10 @@ uv run python -m pycycle_edu_ui.main
 
 目前 UI 已包含：
 
+- 類 Microsoft Office Ribbon 的上方操作列：模型設定、執行計算、結果圖表、報告輸出、資料來源。
+- 可輸入工程參數：Mach、Altitude、T4/Tt4、Fn target、BPR、Fan PR、LPC PR、HPC PR、Percent thrust。
 - 執行 upstream `high_bypass_turbofan.py` 的精簡 wrapper。
+- 背景執行 pyCycle 計算，避免 UI 在求解期間卡住。
 - 解析 pyCycle 英文 viewer 報告 `hbtf_view.out`。
 - 顯示 pyCycle DESIGN 與 OD performance points。
 - 將 BPR、OPR、推力、TSFC 與 CFM56-7B 公開資料做表格與圖表比對。

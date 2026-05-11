@@ -39,17 +39,46 @@ class PerformancePoint:
 
 
 @dataclass(slots=True)
+class EngineInputs:
+    mach: float = 0.8
+    altitude_ft: float = 35000.0
+    t4_max_deg_r: float = 2857.0
+    fn_target_lbf: float = 5900.0
+    bypass_ratio: float = 5.105
+    fan_pressure_ratio: float = 1.685
+    lpc_pressure_ratio: float = 1.935
+    hpc_pressure_ratio: float = 9.369
+    percent_thrust: float = 0.8
+
+    def to_env(self) -> dict[str, str]:
+        return {
+            "PYCYCLE_INPUT_MACH": str(self.mach),
+            "PYCYCLE_INPUT_ALTITUDE_FT": str(self.altitude_ft),
+            "PYCYCLE_INPUT_T4_MAX_DEG_R": str(self.t4_max_deg_r),
+            "PYCYCLE_INPUT_FN_TARGET_LBF": str(self.fn_target_lbf),
+            "PYCYCLE_INPUT_BPR": str(self.bypass_ratio),
+            "PYCYCLE_INPUT_FAN_PR": str(self.fan_pressure_ratio),
+            "PYCYCLE_INPUT_LPC_PR": str(self.lpc_pressure_ratio),
+            "PYCYCLE_INPUT_HPC_PR": str(self.hpc_pressure_ratio),
+            "PYCYCLE_INPUT_PERCENT_THRUST": str(self.percent_thrust),
+        }
+
+
+@dataclass(slots=True)
 class PyCycleRunResult:
     ok: bool
     run_dir: Path
     english_report: Path
     points: list[PerformancePoint]
+    inputs: EngineInputs
+    elapsed_seconds: float
     stdout: str
     stderr: str
     error: str | None = None
 
 
-def run_high_bypass_turbofan() -> PyCycleRunResult:
+def run_high_bypass_turbofan(inputs: EngineInputs | None = None) -> PyCycleRunResult:
+    inputs = inputs or EngineInputs()
     run_dir = RUNS_DIR / datetime.now().strftime("%Y%m%d-%H%M%S")
     run_dir.mkdir(parents=True, exist_ok=True)
 
@@ -64,8 +93,10 @@ def run_high_bypass_turbofan() -> PyCycleRunResult:
         + env.get("PYTHONPATH", "")
     )
     env.setdefault("OPENMDAO_REPORTS", "0")
+    env.update(inputs.to_env())
 
     english_report = run_dir / "hbtf_view.out"
+    started = datetime.now()
     try:
         completed = subprocess.run(
             [sys.executable, str(script)],
@@ -82,6 +113,8 @@ def run_high_bypass_turbofan() -> PyCycleRunResult:
             run_dir=run_dir,
             english_report=english_report,
             points=[],
+            inputs=inputs,
+            elapsed_seconds=(datetime.now() - started).total_seconds(),
             stdout=exc.stdout or "",
             stderr=exc.stderr or "",
             error="pyCycle runner timed out after 180 seconds.",
@@ -92,6 +125,8 @@ def run_high_bypass_turbofan() -> PyCycleRunResult:
             run_dir=run_dir,
             english_report=english_report,
             points=[],
+            inputs=inputs,
+            elapsed_seconds=(datetime.now() - started).total_seconds(),
             stdout=completed.stdout,
             stderr=completed.stderr,
             error=f"pyCycle process exited with code {completed.returncode}",
@@ -103,6 +138,8 @@ def run_high_bypass_turbofan() -> PyCycleRunResult:
             run_dir=run_dir,
             english_report=english_report,
             points=[],
+            inputs=inputs,
+            elapsed_seconds=(datetime.now() - started).total_seconds(),
             stdout=completed.stdout,
             stderr=completed.stderr,
             error="pyCycle finished but hbtf_view.out was not generated.",
@@ -114,6 +151,8 @@ def run_high_bypass_turbofan() -> PyCycleRunResult:
         run_dir=run_dir,
         english_report=english_report,
         points=points,
+        inputs=inputs,
+        elapsed_seconds=(datetime.now() - started).total_seconds(),
         stdout=completed.stdout,
         stderr=completed.stderr,
         error=None if points else "hbtf_view.out generated, but no performance rows were parsed.",

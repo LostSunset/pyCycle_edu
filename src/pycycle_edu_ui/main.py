@@ -10,7 +10,7 @@ from pycycle_edu_ui.views.main_window import MainWindow
 
 def main() -> int:
     app = QApplication(sys.argv)
-    app.setApplicationName("pyCycle Edu Workbench")
+    app.setApplicationName("pyCycle CFM56-7B Analysis Workbench")
     app.setOrganizationName("pyCycle Edu")
     apply_app_theme(app)
 

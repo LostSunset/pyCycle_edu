@@ -27,6 +27,7 @@
 3. 保存 pyCycle 英文 viewer 報告並解析 performance rows。
 4. 將 `Reference_sources/` 的 CFM56-7B 公開資料與 pyCycle 結果做比對圖表。
 5. 匯出正體中文 Markdown 報告，並保留英文 viewer 報告。
+6. 專業化 UI：改為 Ribbon 操作列、工程輸入框、狀態列與背景 pyCycle 計算。
 
 ## 注意事項
 

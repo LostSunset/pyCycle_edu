@@ -6,3 +6,7 @@ __pycache__/
 
 # PowerPoint opens temporary owner files while editing.
 ~$*.pptx
+
+# Keep committed reference samples, but ignore later generated runs/reports.
+Reference_answers/pycycle_ui_ux_reference/runs/*/
+Reference_answers/pycycle_ui_ux_reference/reports/hbtf_cfm56_7b_report_zh_*.md

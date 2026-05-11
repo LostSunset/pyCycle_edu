@@ -76,6 +76,33 @@ def apply_app_theme(app: QApplication) -> None:
         QMainWindow, QDialog {{
             background: {BACKGROUND};
         }}
+        QTabWidget#Ribbon::pane {{
+            border: 0;
+            border-bottom: 1px solid {BORDER};
+            background: {SURFACE_ALT};
+        }}
+        QTabWidget#Ribbon QTabBar::tab {{
+            background: {SURFACE_ALT};
+            border: 0;
+            border-right: 1px solid {BORDER};
+            padding: 8px 18px;
+            min-width: 112px;
+            min-height: 28px;
+            font-weight: 700;
+        }}
+        QTabWidget#Ribbon QTabBar::tab:selected {{
+            background: {SURFACE};
+            color: {ACCENT_DARK};
+        }}
+        QFrame#RibbonGroup {{
+            background: {SURFACE};
+            border: 1px solid {BORDER};
+            border-radius: 6px;
+        }}
+        QLabel#RibbonGroupTitle {{
+            color: {MUTED};
+            font-size: 13px;
+        }}
         QLabel#PageTitle {{
             font-size: 30px;
             font-weight: 700;
@@ -98,6 +125,12 @@ def apply_app_theme(app: QApplication) -> None:
         QFrame#Sidebar {{
             background: {SURFACE_ALT};
             border-right: 1px solid {BORDER};
+        }}
+        QStatusBar {{
+            background: {SURFACE_ALT};
+            border-top: 1px solid {BORDER};
+            color: {MUTED};
+            font-size: 14px;
         }}
         QPushButton {{
             background: {SURFACE};
