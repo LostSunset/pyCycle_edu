@@ -13,6 +13,21 @@
 - Run `./scripts/verify-upstream-submodule.ps1` before committing.
 - Record meaningful development tasks in `docs/dev-log/`.
 - Store or record external sources in `Reference_sources/` before using them for validation.
+- Every time a PPTX is generated or modified, export it to PNG preview images and visually inspect the slides before claiming the deck is ready. Check for text outside frames, clipped text, distorted images, overly small text, and poor text/image balance.
+
+## Fixed Finalization Checklist
+
+For every version or milestone, remember these 9 steps:
+
+0. Commit and push.
+1. Decide whether the version should be updated.
+2. Decide whether a new Release should be published.
+3. Decide whether Markdown files under `docs/` should be updated or added.
+4. Decide whether `README.md` should be updated.
+5. Decide whether `CLAUDE.md` and `AGENTS.md` should be updated.
+6. Decide again whether additional Markdown files under `docs/` are needed.
+7. Follow the rules to update developer logs and add a session note.
+8. Decide whether research goals and research logs should be updated.
 
 ## Current Teaching Direction
 
@@ -33,4 +48,3 @@
 
 - No project version file exists yet.
 - No GitHub Release should be created for the current teaching-deck work unless a version/tag policy is introduced.
-

@@ -34,10 +34,18 @@ This repository is the education/workspace wrapper for upstream pyCycle.
 
    The repository owner/admin may push directly when needed. Other contributors should use PRs.
 
+5. For every PPTX generated or modified under `docs/slides/`, export the deck to PNG preview images and visually inspect them before claiming completion.
+
+   - Use `./docs/slides/export-pptx-preview.ps1`.
+   - Check that text stays inside frames and is not clipped.
+   - Check that images preserve aspect ratio and are not stretched.
+   - Check classroom readability, including older students and projector viewing.
+   - Mention the visual preview result in the dev log.
+
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **pyCycle_edu** (2433 symbols, 3429 relationships, 15 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **pyCycle_edu** (2594 symbols, 3676 relationships, 22 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 

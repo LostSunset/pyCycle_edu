@@ -263,7 +263,22 @@ def add_picture(slide, name, x, y, w, h=None):
     path = ASSET_DIR / name
     if h is None:
         return slide.shapes.add_picture(str(path), Inches(x), Inches(y), width=Inches(w))
-    return slide.shapes.add_picture(str(path), Inches(x), Inches(y), width=Inches(w), height=Inches(h))
+
+    with Image.open(path) as img:
+        img_w, img_h = img.size
+    box_ratio = w / h
+    img_ratio = img_w / img_h
+    if img_ratio >= box_ratio:
+        final_w = w
+        final_h = w / img_ratio
+        final_x = x
+        final_y = y + (h - final_h) / 2
+    else:
+        final_h = h
+        final_w = h * img_ratio
+        final_x = x + (w - final_w) / 2
+        final_y = y
+    return slide.shapes.add_picture(str(path), Inches(final_x), Inches(final_y), width=Inches(final_w), height=Inches(final_h))
 
 
 def two_col(slide, left_title, left_bullets, right_title, right_bullets, colors=(BLUE, ORANGE)):

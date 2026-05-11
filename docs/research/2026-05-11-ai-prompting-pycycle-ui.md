@@ -22,12 +22,14 @@ Develop a student-facing workflow that teaches AI prompting for engineering comp
 - A 21-slide Traditional Chinese PPT has been generated at `docs/slides/pycycle_ai_prompting_course.pptx`.
 - The deck includes larger text for classroom projection and older students.
 - The deck includes generated bitmap visuals for the turbofan concept, AI workflow, uv environment, source governance, PySide6 UI mockup, and bilingual reports.
+- PPTX generation now requires PNG preview export and visual inspection so text overflow, clipped text, and distorted images are caught before completion.
 
 ## Validation Notes
 
 - The final PPTX was opened through Microsoft PowerPoint COM and resaved successfully.
 - The final PPTX contains 7 embedded pictures.
 - The upstream pyCycle submodule was verified clean and unchanged.
+- Preview PNGs are exported with `docs/slides/export-pptx-preview.ps1` and should be visually reviewed for classroom readability.
 
 ## Open Research Questions
 
@@ -45,4 +47,3 @@ Create an executable teaching skeleton:
 - command to run the pyCycle high-bypass turbofan example,
 - CSV/Markdown summary output,
 - minimal PySide6 window that displays inputs and outputs.
-
