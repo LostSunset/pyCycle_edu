@@ -1,7 +1,6 @@
 .venv/
 .venv-pycycle312/
 .superpowers/
-.gitnexus/
 .pytest_cache/
 .agents/
 __pycache__/

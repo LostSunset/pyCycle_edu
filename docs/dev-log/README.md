@@ -29,28 +29,11 @@ Use the local project date. Keep the short topic lowercase and hyphenated.
 Each entry must include:
 
 - `Context`: why the work happened.
-- `GitNexus analysis`: exact command used and a short result summary.
 - `Changes`: files or settings changed.
 - `Verification`: commands run and outcomes.
 - `Risks / follow-up`: unresolved risks, TODOs, or `None`.
 
 Start from `docs/dev-log/TEMPLATE.md`.
-
-## GitNexus rule
-
-Before code analysis or edits, run:
-
-```powershell
-npx gitnexus analyze --embeddings
-```
-
-If embeddings cannot be generated because credentials or network access are unavailable, record the failure and run:
-
-```powershell
-npx gitnexus analyze
-```
-
-Do not silently skip GitNexus analysis.
 
 ## Upstream submodule rule
 

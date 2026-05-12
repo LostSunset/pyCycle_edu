@@ -2,11 +2,6 @@
 
 - 
 
-## GitNexus analysis
-
-- Command:
-- Result:
-
 ## Developer log
 
 - Log entry:

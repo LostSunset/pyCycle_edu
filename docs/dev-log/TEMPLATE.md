@@ -4,11 +4,6 @@
 
 - 
 
-## GitNexus analysis
-
-- Command:
-- Result:
-
 ## Changes
 
 - 
