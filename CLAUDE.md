@@ -45,7 +45,7 @@ This repository is the education/workspace wrapper for upstream pyCycle.
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
-This project is indexed by GitNexus as **pyCycle_edu** (2901 symbols, 4115 relationships, 32 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+This project is indexed by GitNexus as **pyCycle_edu** (3024 symbols, 4333 relationships, 37 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
 
 > If any GitNexus tool warns the index is stale, run `npx gitnexus analyze` in terminal first.
 

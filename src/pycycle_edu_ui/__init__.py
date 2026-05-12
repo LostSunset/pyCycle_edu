@@ -1,4 +1,4 @@
-"""PySide6 education UI for the pyCycle wrapper project."""
+"""pyCycle_GUI computational workspace package."""
 
 __all__ = ["__version__"]
 
