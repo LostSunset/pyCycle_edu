@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simple Turbojet 參考手冊（中英對照）</title>
+<style>
+  :root {
+    --bg: #faf8f3;
+    --paper: #ffffff;
+    --ink: #2a2a2a;
+    --muted: #6a6a6a;
+    --accent: #b85c38;
+    --accent2: #2c5f7c;
+    --grid: #e6e0d4;
+    --warn: #f4d35e;
+    --warnbg: #fff8db;
+  }
+  html, body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC",
+                 -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.65;
+    margin: 0;
+    padding: 0;
+  }
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 40px 32px 80px;
+  }
+  header {
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 16px;
+    margin-bottom: 32px;
+  }
+  header h1 {
+    margin: 0 0 8px;
+    font-size: 2.2rem;
+    letter-spacing: 0.02em;
+  }
+  header .sub {
+    color: var(--muted);
+    font-size: 1.0rem;
+  }
+  nav.toc {
+    background: var(--paper);
+    border: 1px solid var(--grid);
+    border-radius: 8px;
+    padding: 16px 24px;
+    margin: 24px 0 40px;
+  }
+  nav.toc h2 {
+    margin: 0 0 8px;
+    font-size: 1.05rem;
+    color: var(--accent2);
+  }
+  nav.toc ol {
+    margin: 0;
+    padding-left: 24px;
+    columns: 2;
+    column-gap: 40px;
+  }
+  nav.toc li {
+    margin: 2px 0;
+    break-inside: avoid;
+  }
+  nav.toc a {
+    color: var(--ink);
+    text-decoration: none;
+  }
+  nav.toc a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+  section {
+    margin: 48px 0;
+    scroll-margin-top: 20px;
+  }
+  section > h2 {
+    font-size: 1.6rem;
+    color: var(--accent2);
+    border-left: 5px solid var(--accent);
+    padding-left: 12px;
+    margin: 0 0 20px;
+  }
+  h3 {
+    color: var(--accent2);
+    font-size: 1.2rem;
+    margin: 28px 0 12px;
+  }
+  h4 {
+    font-size: 1.05rem;
+    margin: 20px 0 8px;
+  }
+  p, ul, ol {
+    margin: 10px 0;
+  }
+  ul, ol {
+    padding-left: 28px;
+  }
+  li {
+    margin: 4px 0;
+  }
+  code, kbd {
+    background: #f1ece1;
+    color: #5a3b1e;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: "Cascadia Code", "Consolas", "Menlo", monospace;
+    font-size: 0.93em;
+  }
+  pre {
+    background: #2a2a2a;
+    color: #f0eada;
+    padding: 14px 18px;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-family: "Cascadia Code", "Consolas", "Menlo", monospace;
+    font-size: 0.92em;
+    line-height: 1.5;
+  }
+  pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 16px 0 24px;
+    background: var(--paper);
+    font-size: 0.94em;
+  }
+  table th, table td {
+    border: 1px solid var(--grid);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+  table th {
+    background: #f1ece1;
+    color: var(--accent2);
+    font-weight: 600;
+  }
+  table tr:nth-child(2n) td {
+    background: #fdfbf6;
+  }
+  .en {
+    color: var(--accent2);
+    font-weight: 600;
+  }
+  .zh {
+    color: var(--ink);
+  }
+  .unit {
+    color: var(--muted);
+    font-size: 0.9em;
+  }
+  .callout {
+    background: var(--warnbg);
+    border-left: 4px solid var(--warn);
+    padding: 12px 18px;
+    margin: 16px 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .callout.tip {
+    background: #eaf3f7;
+    border-left-color: var(--accent2);
+  }
+  .callout.danger {
+    background: #fbe8e1;
+    border-left-color: var(--accent);
+  }
+  .station-diagram {
+    background: var(--paper);
+    border: 1px solid var(--grid);
+    border-radius: 8px;
+    padding: 20px 16px;
+    font-family: "Cascadia Code", "Consolas", monospace;
+    font-size: 0.9em;
+    white-space: pre;
+    overflow-x: auto;
+    line-height: 1.3;
+  }
+  footer {
+    margin-top: 60px;
+    padding-top: 20px;
+    border-top: 1px solid var(--grid);
+    color: var(--muted);
+    font-size: 0.9em;
+  }
+  .label-row {
+    display: flex;
+    gap: 16px;
+    align-items: baseline;
+    margin: 6px 0;
+  }
+  .label-row .term {
+    font-weight: 600;
+    color: var(--accent);
+    flex-shrink: 0;
+    min-width: 110px;
+  }
+  abbr {
+    text-decoration: none;
+    border-bottom: 1px dotted var(--muted);
+    cursor: help;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Simple Turbojet 教學模組 ─ 完整參考手冊</h1>
+  <div class="sub">
+    pyCycle MPTurbojet ＋ PySide6 GUI ｜ 中英對照名詞、元件、檔案、實例詳解
+    <br>版本：v0.2.0 ｜ 對應目錄：<code>tutorials/simple_turbojet/</code>
+  </div>
+</header>
+
+<nav class="toc">
+  <h2>目錄 Contents</h2>
+  <ol>
+    <li><a href="#sec1">渦輪噴射引擎 101</a></li>
+    <li><a href="#sec2">縮寫對照表</a></li>
+    <li><a href="#sec3">流動站位編號</a></li>
+    <li><a href="#sec4">pyCycle 元件參考</a></li>
+    <li><a href="#sec5">GUI 輸入欄位逐項解釋</a></li>
+    <li><a href="#sec6">輸出檔案逐項解釋</a></li>
+    <li><a href="#sec7">inputs.html 詳解</a></li>
+    <li><a href="#sec8">n2.html 詳解</a></li>
+    <li><a href="#sec9">工程實例</a></li>
+    <li><a href="#sec10">常見錯誤排除</a></li>
+    <li><a href="#sec11">延伸閱讀</a></li>
+  </ol>
+</nav>
+
+<!-- ============ 1 ============ -->
+<section id="sec1">
+  <h2>1. 渦輪噴射引擎 101 / Turbojet Primer</h2>
+
+  <p>
+    渦輪噴射引擎是最早的實用噴射推進形式（1937 年 Whittle / von Ohain）。
+    它的理想熱力循環是 <strong>布雷頓循環（Brayton Cycle）</strong>：
+    <em>等熵壓縮 → 等壓加熱 → 等熵膨脹 → 等壓散熱</em>。
+  </p>
+
+  <h3>1.1 循環四步驟</h3>
+  <table>
+    <thead><tr>
+      <th>步驟 / Step</th>
+      <th>過程 / Process</th>
+      <th>實機元件 / Real Component</th>
+      <th>物理意義 / Meaning</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td>1 → 2</td>
+        <td><span class="en">Isentropic compression</span><br>等熵壓縮</td>
+        <td>Inlet + Compressor<br>進氣道 + 壓縮機</td>
+        <td>提高空氣壓力與溫度，準備進入燃燒室；理想為等熵，實際有效率損失。</td>
+      </tr>
+      <tr>
+        <td>2 → 3</td>
+        <td><span class="en">Isobaric heat addition</span><br>等壓加熱</td>
+        <td>Combustor<br>燃燒室</td>
+        <td>噴入燃油燃燒，溫度大幅升高；理想壓力不變，實際有壓力損失 dP/P。</td>
+      </tr>
+      <tr>
+        <td>3 → 4</td>
+        <td><span class="en">Isentropic expansion</span><br>等熵膨脹</td>
+        <td>Turbine<br>渦輪</td>
+        <td>高溫氣體驅動渦輪、由軸帶動壓縮機；功率必須等於壓縮機所耗（軸功率平衡）。</td>
+      </tr>
+      <tr>
+        <td>4 → 5 → 0</td>
+        <td><span class="en">Isobaric heat rejection</span><br>等壓散熱</td>
+        <td>Nozzle<br>噴嘴 + 大氣</td>
+        <td>剩餘高壓氣體經噴嘴加速排出，產生推力；之後在大氣中散熱回到環境狀態。</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>1.2 推力與比油耗</h3>
+  <p>
+    <strong>淨推力 / Net Thrust (Fn)</strong>：噴嘴出口動量 − 入口動量（ram drag）。
+    這是引擎實際「推飛機」的力量。
+  </p>
+  <p>
+    <strong>比油耗 / Thrust Specific Fuel Consumption (TSFC)</strong>：每單位推力每小時消耗
+    多少燃油，數值越小越省油。對民航發動機是核心競爭指標。
+  </p>
+  <p>
+    <strong>總壓比 / Overall Pressure Ratio (OPR)</strong>：燃燒室入口總壓 ÷ 大氣總壓。
+    OPR 越高熱效率越高，但會推升 T3、T4 與材料負擔。
+  </p>
+
+  <h3>1.3 為何需要 Newton solver？</h3>
+  <p>
+    引擎設計同時要滿足幾個彼此牽連的條件：
+  </p>
+  <ul>
+    <li>軸功率平衡：渦輪輸出 = 壓縮機消耗</li>
+    <li>推力 = 目標推力（Fn target）</li>
+    <li>T4 = 渦輪入口溫度上限</li>
+  </ul>
+  <p>
+    這些方程式都互相耦合（feedback loop），無法照單向順序逐步解出，
+    必須用迭代求解器（OpenMDAO 的 <code>NewtonSolver</code>）反覆收斂。
+    這正是 <code>BalanceComp</code> 與 <code>n2.html</code> 上三角連線的物理本質。
+  </p>
+</section>
+
+<!-- ============ 2 ============ -->
+<section id="sec2">
+  <h2>2. 縮寫對照表 / Abbreviation Glossary</h2>
+
+  <p>本表覆蓋 GUI、報告、log、HTML 報告中出現的所有縮寫。</p>
+
+  <h3>2.1 引擎性能</h3>
+  <table>
+    <thead><tr>
+      <th>縮寫</th><th>英文全名</th><th>正體中文</th><th>單位</th><th>說明</th>
+    </tr></thead>
+    <tbody>
+      <tr><td>Fn</td><td>Net Thrust</td><td>淨推力</td><td>lbf</td>
+        <td>引擎真正推動飛機的力量；扣掉 ram drag 後的淨值。</td></tr>
+      <tr><td>Fg</td><td>Gross Thrust</td><td>總（毛）推力</td><td>lbf</td>
+        <td>噴嘴出口噴流動量產生的推力，不扣 ram drag。</td></tr>
+      <tr><td>Fram</td><td>Ram Drag</td><td>衝壓阻力</td><td>lbf</td>
+        <td>進氣道把外界空氣吸入並減速所產生的「反推力」。<code>Fn = Fg − Fram</code>。</td></tr>
+      <tr><td>TSFC</td><td>Thrust Specific Fuel Consumption</td><td>比油耗</td><td>lbm/hr/lbf</td>
+        <td>每磅推力每小時的耗油量。民航發動機 TSFC ≈ 0.3–0.6（裝旁通比）；軍機/簡單渦噴 TSFC ≈ 0.8–1.1。</td></tr>
+      <tr><td>OPR</td><td>Overall Pressure Ratio</td><td>總壓比</td><td>—</td>
+        <td>燃燒室入口總壓除以大氣總壓。本模型設計點 OPR ≈ 13.5。</td></tr>
+      <tr><td>BPR</td><td>Bypass Ratio</td><td>旁通比</td><td>—</td>
+        <td>旁通氣流與核心氣流質量比。<strong>本案是純渦噴，BPR=0，不出現。</strong></td></tr>
+      <tr><td>FAR</td><td>Fuel-Air Ratio</td><td>油氣比</td><td>—</td>
+        <td>燃料質量流量 ÷ 空氣質量流量。本模型 ≈ 0.0175。</td></tr>
+      <tr><td>Mach / MN</td><td>Mach Number</td><td>馬赫數</td><td>—</td>
+        <td>流速 ÷ 當地音速。設計點通常為 0（靜地，SLS）。</td></tr>
+      <tr><td>alt</td><td>Altitude</td><td>高度</td><td>ft</td>
+        <td>飛行高度，影響大氣 P, T。SLS 即 alt = 0。</td></tr>
+      <tr><td>W</td><td>Mass Flow Rate</td><td>質量流率</td><td>lbm/s</td>
+        <td>空氣質量流量；設計點解出的 balance 變數，本模型 ≈ 168 lbm/s。</td></tr>
+      <tr><td>Wfuel</td><td>Fuel Flow Rate</td><td>燃油流率</td><td>lbm/s</td>
+        <td>燃油質量流量。</td></tr>
+      <tr><td>Nmech</td><td>Mechanical Speed</td><td>機械轉速</td><td>rpm</td>
+        <td>主軸（共用軸）轉速。設計點固定 8070 rpm，OD 由 balance 解出。</td></tr>
+    </tbody>
+  </table>
+
+  <h3>2.2 熱力學狀態量</h3>
+  <table>
+    <thead><tr>
+      <th>縮寫</th><th>英文全名</th><th>正體中文</th><th>單位</th><th>說明</th>
+    </tr></thead>
+    <tbody>
+      <tr><td>T / Tt</td><td>Total Temperature</td><td>總溫（駐點溫度）</td><td>degR</td>
+        <td>把氣流等熵減速到 0 速度時的溫度。本模型 T4 設計上限 2370 degR。</td></tr>
+      <tr><td>P / Pt</td><td>Total Pressure</td><td>總壓（駐點壓力）</td><td>psia</td>
+        <td>等熵減速到 0 速度時的壓力。OPR 是兩個 Pt 的比值。</td></tr>
+      <tr><td>Ts</td><td>Static Temperature</td><td>靜溫</td><td>degR</td>
+        <td>流動中實際的氣體溫度（不含動能項）。</td></tr>
+      <tr><td>Ps</td><td>Static Pressure</td><td>靜壓</td><td>psia</td>
+        <td>流動中實際的氣體壓力。噴嘴出口需匹配大氣 Ps。</td></tr>
+      <tr><td>h</td><td>Specific Enthalpy</td><td>比焓</td><td>Btu/lbm</td>
+        <td>單位質量的焓。P-h 圖的 x 軸。</td></tr>
+      <tr><td>S</td><td>Specific Entropy</td><td>比熵</td><td>Btu/lbm/degR</td>
+        <td>單位質量的熵。T-S 圖的 x 軸；理想等熵過程 S 不變。</td></tr>
+      <tr><td>V</td><td>Velocity</td><td>速度</td><td>ft/s</td>
+        <td>流動速度。</td></tr>
+      <tr><td>R</td><td>Specific Gas Constant</td><td>比氣體常數</td><td>ft·lbf/lbm/degR</td>
+        <td>氣體常數除以分子量。空氣 R ≈ 53.35。</td></tr>
+      <tr><td>gamma / γ</td><td>Specific Heat Ratio</td><td>比熱比</td><td>—</td>
+        <td>定壓比熱 / 定容比熱（Cp / Cv）；空氣 γ ≈ 1.4，高溫燃氣 ≈ 1.33。</td></tr>
+      <tr><td>T4</td><td>Turbine Inlet Total Temp</td><td>渦輪入口總溫</td><td>degR</td>
+        <td>燃燒室出口溫度，材料極限。本模型上限 2370 degR (~1316 K)。</td></tr>
+      <tr><td>SLS</td><td>Sea-Level Static</td><td>海平面靜推力</td><td>—</td>
+        <td>alt=0, Mach≈0 的標稱工況，民航起飛規格基準。</td></tr>
+      <tr><td>SI / SF</td><td>Système International</td><td>國際單位制</td><td>—</td>
+        <td>m, kg, K, N, Pa, J。本模型用美制單位（lbm, lbf, degR, psia, Btu）。</td></tr>
+    </tbody>
+  </table>
+
+  <h3>2.3 元件性能參數</h3>
+  <table>
+    <thead><tr>
+      <th>縮寫</th><th>英文全名</th><th>正體中文</th><th>單位</th><th>說明</th>
+    </tr></thead>
+    <tbody>
+      <tr><td>PR</td><td>Pressure Ratio</td><td>壓比</td><td>—</td>
+        <td>元件出口壓力 / 入口壓力。<code>comp.PR=13.5</code> 表示壓縮機把壓力提高 13.5 倍。</td></tr>
+      <tr><td>eff</td><td>Efficiency</td><td>效率</td><td>—</td>
+        <td>等熵效率，元件實際做功與理想做功的比。本模型壓縮機 0.83、渦輪 0.86。</td></tr>
+      <tr><td>dPqP</td><td>Pressure Loss Ratio (ΔP/P)</td><td>壓損比</td><td>—</td>
+        <td>燃燒室壓力損失百分比。本模型 0.03 (3%)。</td></tr>
+      <tr><td>Cv</td><td>Velocity Coefficient</td><td>速度係數</td><td>—</td>
+        <td>噴嘴實際 / 理想出口速度比。本模型 0.99。</td></tr>
+      <tr><td>map_data</td><td>Component Map Data</td><td>元件特性圖資料</td><td>—</td>
+        <td>內建的壓縮機 / 渦輪 map 表，含 surge line、效率島、speed line。</td></tr>
+      <tr><td>map_extrap</td><td>Map Extrapolation</td><td>特性圖外插</td><td>—</td>
+        <td>是否允許求解器把工作點落在 map 邊界之外（透過外插）。</td></tr>
+      <tr><td>trq</td><td>Torque</td><td>扭矩</td><td>ft·lbf</td>
+        <td>軸上的扭矩。<code>comp.trq</code> 是壓縮機對軸的反扭矩。</td></tr>
+      <tr><td>pwr_net</td><td>Net Shaft Power</td><td>軸淨功率</td><td>hp</td>
+        <td>渦輪輸出 − 壓縮機消耗，設計點 balance 條件強制為 0。</td></tr>
+      <tr><td>s_PR / s_Wc / s_eff / s_Nc</td><td>Map Scalars</td><td>特性圖縮放係數</td><td>—</td>
+        <td>把通用 map 縮到本引擎尺寸的縮放因子，設計點解出後鎖定供 OD 使用。</td></tr>
+    </tbody>
+  </table>
+
+  <h3>2.4 OpenMDAO / pyCycle 框架術語</h3>
+  <table>
+    <thead><tr>
+      <th>縮寫</th><th>英文全名</th><th>正體中文</th><th>說明</th>
+    </tr></thead>
+    <tbody>
+      <tr><td>OM</td><td>OpenMDAO</td><td>OpenMDAO 多學科最佳化框架</td>
+        <td>NASA 開源的多學科分析與最佳化平台，pyCycle 建構在它上面。</td></tr>
+      <tr><td>MPCycle</td><td>Multi-Point Cycle</td><td>多工作點循環</td>
+        <td>同時計算設計點 + 數個離設計點的容器。</td></tr>
+      <tr><td>OD</td><td>Off-Design</td><td>離設計點</td>
+        <td>不是設計工況的其他飛行條件，例如巡航、ground idle。</td></tr>
+      <tr><td>DESIGN</td><td>Design Point</td><td>設計點</td>
+        <td>主要的設計工況，本模型為 SLS、Fn=11800 lbf、T4=2370 degR。</td></tr>
+      <tr><td>N²</td><td>N-squared Diagram</td><td>N² 系統結構圖</td>
+        <td>系統工程通用的矩陣式連線視圖，OpenMDAO 自動產生互動 HTML 版。</td></tr>
+      <tr><td>Fl_I / Fl_O</td><td>Flow Input / Output</td><td>流動站位入 / 出</td>
+        <td>元件的氣流接口名稱。<code>comp.Fl_O</code> 即壓縮機出口流動站。</td></tr>
+      <tr><td>tot / stat</td><td>Total / Static</td><td>總值 / 靜值</td>
+        <td>變數名前綴。<code>Fl_O:tot:T</code> 是總溫，<code>Fl_O:stat:T</code> 是靜溫。</td></tr>
+      <tr><td>lhs / rhs</td><td>Left- / Right-Hand Side</td><td>方程式左式 / 右式</td>
+        <td>BalanceComp 的方程式兩邊；Newton 求解 LHS = RHS。</td></tr>
+      <tr><td>IVC</td><td>IndepVarComp</td><td>獨立變數元件</td>
+        <td>OpenMDAO 自動建立的「未連線輸入」容器，名稱為 <code>_auto_ivc</code>。</td></tr>
+      <tr><td>BC</td><td>BalanceComp</td><td>平衡元件</td>
+        <td>讓 Newton solver 解一條 implicit equation 的元件，常用於熱循環收斂。</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============ 3 ============ -->
+<section id="sec3">
+  <h2>3. 流動站位編號 / Station Numbering</h2>
+
+  <p>本模型沿用 NASA SAE ARP755 的單軸渦噴站位編號。</p>
+
+  <div class="station-diagram">
+    Ambient    Inlet      Compressor   Combustor    Turbine    Nozzle    Exhaust
+       0  ───▶   1   ───▶   2   ───▶    3    ───▶    4   ───▶   5   ───▶ Atmosphere
+
+   ┌──────┐   ┌──────┐   ┌────────┐   ┌─────────┐   ┌──────┐   ┌──────┐
+   │  fc  │   │inlet │   │  comp  │   │ burner  │   │ turb │   │ nozz │
+   └──────┘   └──────┘   └────────┘   └─────────┘   └──────┘   └──────┘
+                                      ▲       │
+                                      │ fuel  │
+                                      │       ▼
+                                  ┌─────────┐
+                                  │ shaft + perf + balance
+                                  │  (control loop / Newton solver)
+                                  └─────────┘
+  </div>
+
+  <h3>站位物理意義</h3>
+  <table>
+    <thead><tr>
+      <th>站位</th><th>pyCycle 名稱</th><th>所在元件</th><th>正體中文</th><th>關鍵物理量</th>
+    </tr></thead>
+    <tbody>
+      <tr><td>0</td><td><code>fc.Fl_O</code></td><td>FlightConditions</td>
+        <td>大氣 / 自由流</td>
+        <td>大氣 P, T（隨 alt 而變）。本模型 SLS 時 Pt=14.7 psia, Tt=518.7 degR。</td></tr>
+      <tr><td>1</td><td><code>inlet.Fl_O</code></td><td>Inlet</td>
+        <td>進氣道出口</td>
+        <td>受 ram recovery 效應；本模型靜地 MN→0，Pt 略低於 0 站。</td></tr>
+      <tr><td>2</td><td><code>comp.Fl_O</code></td><td>Compressor</td>
+        <td>壓縮機出口</td>
+        <td>Pt 大幅上升（×13.5），Tt 上升至 ~1200 degR。</td></tr>
+      <tr><td>3</td><td><code>burner.Fl_O</code></td><td>Combustor</td>
+        <td>燃燒室出口</td>
+        <td>Tt = T4 ≈ 2370 degR，Pt 因燃燒損失下降 3%。</td></tr>
+      <tr><td>4</td><td><code>turb.Fl_O</code></td><td>Turbine</td>
+        <td>渦輪出口</td>
+        <td>Pt 大幅下降（驅動壓縮機），Tt 下降至 ~1800 degR。</td></tr>
+      <tr><td>5</td><td><code>nozz.Fl_O</code></td><td>Nozzle</td>
+        <td>噴嘴出口</td>
+        <td>剩餘 Pt 轉動能加速排出，產生 Fg。Ps 匹配大氣靜壓。</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout tip">
+    <strong>讀圖技巧：</strong>T-S 圖上看「站 3 → 4」斜率代表渦輪做功；
+    P-h 圖上看「站 2 → 3」垂直幾乎不變代表等壓加熱（除了 3% 損失）；
+    站 0 → 1 在靜地時幾乎重疊（沒有 ram 效應）。
+  </div>
+</section>
+
+<!-- ============ 4 ============ -->
+<section id="sec4">
+  <h2>4. pyCycle 元件參考 / Component Reference</h2>
+
+  <h3><code>FlightConditions</code> ─ 飛行條件</h3>
+  <ul>
+    <li><strong>輸入：</strong><code>alt</code>（高度）、<code>MN</code>（馬赫數）</li>
+    <li><strong>輸出：</strong>大氣 P, T；建立 0 站位流動。</li>
+    <li><strong>實機對應：</strong>大氣模型 + Pitot 入口靜壓。</li>
+  </ul>
+
+  <h3><code>Inlet</code> ─ 進氣道</h3>
+  <ul>
+    <li><strong>輸入：</strong>來自 fc.Fl_O 的流動 + <code>MN</code>（進氣道內馬赫數）</li>
+    <li><strong>內部：</strong>計算 ram drag <code>F_ram</code>。</li>
+    <li><strong>實機對應：</strong>飛機進氣道；超音速時有 shock recovery 損失。</li>
+  </ul>
+
+  <h3><code>Compressor</code> ─ 壓縮機</h3>
+  <ul>
+    <li><strong>關鍵設計變數：</strong><code>PR</code>（壓比）、<code>eff</code>（等熵效率）</li>
+    <li><strong>使用 map：</strong><code>pyc.AXI5</code>（軸流式 5 級壓縮機通用 map）</li>
+    <li><strong>軸接口：</strong>輸出反扭矩 <code>trq</code> 到 <code>shaft.trq_0</code>。</li>
+    <li><strong>實機對應：</strong>多級軸流壓縮機，例如 J85 共 9 級。</li>
+  </ul>
+
+  <h3><code>Combustor</code> ─ 燃燒室</h3>
+  <ul>
+    <li><strong>輸入：</strong>FAR（油氣比）由 BalanceComp 解出</li>
+    <li><strong>內部：</strong>計算 <code>Wfuel</code>，加熱氣體到 T4。</li>
+    <li><strong>損失：</strong><code>dPqP=0.03</code>（3% 壓損）</li>
+    <li><strong>實機對應：</strong>環形或筒形燃燒室。</li>
+  </ul>
+
+  <h3><code>Turbine</code> ─ 渦輪</h3>
+  <ul>
+    <li><strong>關鍵設計變數：</strong><code>PR</code>（被 BalanceComp 解出）、<code>eff</code></li>
+    <li><strong>使用 map：</strong><code>pyc.LPT2269</code>（低壓渦輪通用 map）</li>
+    <li><strong>軸接口：</strong>輸出 <code>trq</code> 到 <code>shaft.trq_1</code>。</li>
+    <li><strong>實機對應：</strong>單級或多級反作用式渦輪。</li>
+  </ul>
+
+  <h3><code>Nozzle</code> ─ 噴嘴</h3>
+  <ul>
+    <li><strong>型態：</strong><code>nozzType='CD'</code>（Convergent-Divergent，收斂擴散）</li>
+    <li><strong>損失：</strong><code>Cv=0.99</code>（99% 速度係數）</li>
+    <li><strong>約束：</strong>出口 Ps 必須匹配 <code>fc.Fl_O:stat:P</code>。</li>
+    <li><strong>實機對應：</strong>定型噴嘴（亞音速）或可變幾何（超音速作戰機）。</li>
+  </ul>
+
+  <h3><code>Shaft</code> ─ 主軸</h3>
+  <ul>
+    <li><strong>連接：</strong>compressor.trq 與 turb.trq</li>
+    <li><strong>輸出：</strong><code>pwr_net</code>（淨功率，設計點 = 0）</li>
+    <li><strong>本模型：</strong>單軸（num_ports=2），共用 8070 rpm。</li>
+  </ul>
+
+  <h3><code>Performance</code> ─ 性能彙整</h3>
+  <ul>
+    <li><strong>計算：</strong>OPR、淨推力 Fn、TSFC</li>
+    <li><strong>輸入：</strong>perf.Pt2, perf.Pt3, perf.Wfuel_0, perf.ram_drag, perf.Fg_0</li>
+    <li><strong>是觀察輸出而非物理元件。</strong></li>
+  </ul>
+
+  <h3><code>BalanceComp</code> ─ 平衡元件 / Newton 變數容器</h3>
+  <ul>
+    <li>設計點解 (W, FAR, turb_PR) 滿足 (Fn, T4, shaft.pwr_net=0)</li>
+    <li>離設計點解 (W, FAR, Nmech) 滿足 (nozz.Throat:stat:area, Fn, shaft.pwr_net=0)</li>
+    <li>每條方程式以 <code>lhs:&lt;name&gt;</code> 與 <code>rhs:&lt;name&gt;</code> 表示左右式。</li>
+  </ul>
+</section>
+
+<!-- ============ 5 ============ -->
+<section id="sec5">
+  <h2>5. GUI 輸入欄位逐項解釋 / GUI Input Reference</h2>
+
+  <p>左側面板「Design Point Inputs / 設計點輸入」共 7 個欄位：</p>
+
+  <table>
+    <thead><tr>
+      <th>欄位</th><th>變數路徑</th><th>單位</th><th>預設</th><th>意義 / 調校建議</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td>Altitude / 高度</td>
+        <td><code>DESIGN.fc.alt</code></td>
+        <td>ft</td><td>0</td>
+        <td>飛行高度。0 = 海平面 (SLS)。每升高 1000 ft，大氣 P 約降 3.5%。</td>
+      </tr>
+      <tr>
+        <td>Mach / 馬赫數</td>
+        <td><code>DESIGN.fc.MN</code></td>
+        <td>—</td><td>1×10⁻⁶</td>
+        <td>近 0 即代表靜地。設計點 SLS 取極小值避免奇異。巡航典型 0.2–0.85。</td>
+      </tr>
+      <tr>
+        <td>Target Fn / 目標淨推力</td>
+        <td><code>DESIGN.balance.Fn_target</code></td>
+        <td>lbf</td><td>11800</td>
+        <td>設計推力。Newton solver 會調整 W 以達到此值。</td>
+      </tr>
+      <tr>
+        <td>T4 target / 渦輪入口溫度</td>
+        <td><code>DESIGN.balance.T4_target</code></td>
+        <td>degR</td><td>2370</td>
+        <td>渦輪材料的溫度極限。提高會增推力但減壽命。<strong>不可超過材料規格</strong>。</td>
+      </tr>
+      <tr>
+        <td>Compressor PR / 壓縮機壓比</td>
+        <td><code>DESIGN.comp.PR</code></td>
+        <td>—</td><td>13.5</td>
+        <td>壓縮機提高壓力的倍數。高 PR 提高熱效率但需要更多級。</td>
+      </tr>
+      <tr>
+        <td>Compressor η / 壓縮機效率</td>
+        <td><code>DESIGN.comp.eff</code></td>
+        <td>—</td><td>0.83</td>
+        <td>等熵效率。實機現代軸流壓縮機通常 0.83–0.89。</td>
+      </tr>
+      <tr>
+        <td>Turbine η / 渦輪效率</td>
+        <td><code>DESIGN.turb.eff</code></td>
+        <td>—</td><td>0.86</td>
+        <td>等熵效率。現代渦輪通常 0.86–0.92。</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <strong>離設計點 OD0 / OD1 是寫死的：</strong>
+    <ul>
+      <li>OD0：MN≈0、alt=0、Fn target=11000 lbf（接近設計點但較低推力）</li>
+      <li>OD1：MN=0.2、alt=5000 ft、Fn target=8000 lbf（典型巡航）</li>
+    </ul>
+    要修改 OD 條件，請編輯 <code>MPTurbojet.setup</code> 中的 <code>od_pts</code> 列表。
+  </div>
+</section>
+
+<!-- ============ 6 ============ -->
+<section id="sec6">
+  <h2>6. 輸出檔案逐項解釋 / Output File Reference</h2>
+
+  <p>所有輸出在 <code>tutorials/simple_turbojet/output/</code>。</p>
+
+  <h3>6.1 文字 / PDF 摘要</h3>
+  <table>
+    <thead><tr><th>檔名</th><th>內容</th><th>用途</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>simple_turbojet_summary.txt</code></td>
+        <td>輸入清單、求解器 log、三個工作點的 <code>viewer</code> 報告與
+            <code>comprehensive_performance_summary</code></td>
+        <td>純文字方便 grep / diff，課堂講義可直接貼。</td>
+      </tr>
+      <tr>
+        <td><code>simple_turbojet_summary.pdf</code></td>
+        <td>同上內容 reportlab 排版版本</td>
+        <td>正式報告附件。</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>6.2 熱力循環圖（自製，含 leader-line 標籤）</h3>
+  <table>
+    <thead><tr><th>檔名</th><th>軸</th><th>用途</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>simple_turbojet_ts_diagram.{png,pdf}</code></td>
+        <td>x = S（熵），y = T（總溫）</td>
+        <td>顯示循環各站位熱力位置；最大溫差代表燃燒室。</td>
+      </tr>
+      <tr>
+        <td><code>simple_turbojet_ph_diagram.{png,pdf}</code></td>
+        <td>x = h（比焓），y = P（總壓，log scale）</td>
+        <td>等壓加熱在 y 軸近似水平。</td>
+      </tr>
+      <tr>
+        <td><code>simple_turbojet_comparison.{png,pdf}</code></td>
+        <td>四宮格：T-S 對照 / Fn / TSFC / OPR 條圖</td>
+        <td>DESIGN vs OD0 vs OD1 的工作點性能差異。</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>6.3 元件特性圖（pyc 內建）</h3>
+  <table>
+    <thead><tr><th>檔名</th><th>內容</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>simple_turbojet_compressor_map_DESIGN_0.{png,pdf}</code></td>
+        <td>壓縮機 map：speed lines、surge line、效率島、目前工作點。</td>
+      </tr>
+      <tr>
+        <td><code>simple_turbojet_turbine_map_DESIGN_0.{png,pdf}</code></td>
+        <td>渦輪 map：speed lines、choke、效率島、目前工作點。</td>
+      </tr>
+      <tr>
+        <td><code>DESIGN.comp.pdf</code> / <code>DESIGN.turb.pdf</code></td>
+        <td>pyc 內部產生的元件摘要 PDF（副作用輸出）。</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>6.4 OpenMDAO 互動式 HTML（重點）</h3>
+  <table>
+    <thead><tr><th>檔名</th><th>內容</th><th>怎麼用</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>inputs.html</code></td>
+        <td>所有輸入變數清單、來源、單位、數值</td>
+        <td>「設計變數＋熱循環目標」一鍵清單，詳見 §7。</td>
+      </tr>
+      <tr>
+        <td><code>n2.html</code></td>
+        <td>互動式 N² 系統結構圖</td>
+        <td>看回授迴路、debug 不收斂、跨組溝通架構，詳見 §8。</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============ 7 ============ -->
+<section id="sec7">
+  <h2>7. <code>inputs.html</code> 詳解</h2>
+
+  <h3>7.1 它在回答什麼問題？</h3>
+  <p>
+    「<strong>這次跑的模型，總共有哪些輸入？它們被誰驅動？預設值是什麼？</strong>」
+  </p>
+
+  <h3>7.2 表格欄位翻譯</h3>
+  <table>
+    <thead><tr><th>欄位</th><th>正體中文</th><th>說明</th></tr></thead>
+    <tbody>
+      <tr><td>name / varname</td><td>變數名稱</td>
+        <td>完整路徑，如 <code>DESIGN.balance.Fn_target</code>。</td></tr>
+      <tr><td>units</td><td>單位</td>
+        <td>OpenMDAO 字串，如 <code>lbf</code>、<code>degR</code>、<code>lbm/s</code>。</td></tr>
+      <tr><td>val</td><td>數值</td>
+        <td>當下的陣列值。</td></tr>
+      <tr><td>source</td><td>來源</td>
+        <td>驅動這個輸入的輸出路徑。<code>_auto_ivc.*</code> 代表未連線輸入（使用者可改）。</td></tr>
+      <tr><td>prom_name</td><td>提升名稱</td>
+        <td>對外（promotes）使用的簡名，例如 <code>Nmech</code>。</td></tr>
+      <tr><td>min / max</td><td>下限 / 上限</td>
+        <td>BalanceComp 解出的變數常設此限制（如 <code>turb_PR ∈ [1.001, 8]</code>）。</td></tr>
+    </tbody>
+  </table>
+
+  <h3>7.3 三大實例</h3>
+
+  <h4>例 1：抓單位錯置（lbf vs N）</h4>
+  <p>
+    過濾 <code>Fn_target</code>，確認 <code>units=lbf</code>。若新人誤把 SI 數字（如 52500 N）
+    填入 GUI，這裡會看到 <code>val=[52500] units=lbf</code> = 52500 lbf ≈ 233 kN，
+    遠超出 11800 lbf 設計，可在 Newton 跑爆前抓到。
+  </p>
+
+  <h4>例 2：「設計變數」 = 全部 _auto_ivc</h4>
+  <p>過濾 <code>source</code> 欄含 <code>_auto_ivc</code>，得到本次模擬的完整 input deck：</p>
+  <ul>
+    <li>DESIGN.fc.alt / fc.MN</li>
+    <li>DESIGN.comp.PR / comp.eff / turb.eff</li>
+    <li>DESIGN.balance.Fn_target / T4_target</li>
+    <li>OD0.fc.alt / OD0.fc.MN / OD0.balance.Fn_target</li>
+    <li>OD1.fc.alt / OD1.fc.MN / OD1.balance.Fn_target</li>
+  </ul>
+
+  <h4>例 3：對比 DESIGN vs OD 對 Nmech 的處理</h4>
+  <pre><code>DESIGN.Nmech    source=_auto_ivc.*        ← 設計點固定轉速
+OD0.Nmech       source=OD0.balance.Nmech  ← 離設計點由 balance 解出
+OD1.Nmech       source=OD1.balance.Nmech</code></pre>
+  <p>不看程式碼就能讀出架構決策。</p>
+</section>
+
+<!-- ============ 8 ============ -->
+<section id="sec8">
+  <h2>8. <code>n2.html</code> 詳解</h2>
+
+  <h3>8.1 它在回答什麼問題？</h3>
+  <p>
+    「<strong>這個模型內部資料怎麼流？哪裡是回授？Newton solver 在解什麼？</strong>」
+  </p>
+
+  <h3>8.2 介面元素</h3>
+  <ul>
+    <li><strong>對角線元件（灰色方塊）</strong>：依執行順序排列。</li>
+    <li><strong>下三角（藍/橘色塊）</strong>：前饋連線 — 上游送下游，自然順序可解。</li>
+    <li><strong>上三角（紅色塊）</strong>：回授連線 — <em>必須 Newton solver 才能解</em>。</li>
+    <li><strong>左側樹</strong>：可展開的系統階層 (DESIGN / OD0 / OD1)。</li>
+    <li><strong>頂部 Search</strong>：高亮特定變數所有連線。</li>
+  </ul>
+
+  <h3>8.3 本模型的關鍵連線</h3>
+
+  <h4>下三角（前饋，藍色）</h4>
+  <ul>
+    <li><code>fc.Fl_O → inlet.Fl_I → comp.Fl_I → burner.Fl_I → turb.Fl_I → nozz.Fl_I</code>（氣流接力）</li>
+    <li><code>comp.trq → shaft.trq_0</code>、<code>turb.trq → shaft.trq_1</code>（軸扭矩）</li>
+    <li><code>perf.Fn → balance.lhs:W</code>（推力進 balance 左式）</li>
+    <li><code>burner.Fl_O:tot:T → balance.lhs:FAR</code>（T4 進 balance 左式）</li>
+    <li><code>shaft.pwr_net → balance.lhs:turb_PR</code>（軸功率進 balance 左式）</li>
+  </ul>
+
+  <h4>上三角（回授，紅色）─ Newton solver 戰場</h4>
+  <ul>
+    <li><code>balance.W → inlet.Fl_I:stat:W</code></li>
+    <li><code>balance.FAR → burner.Fl_I:FAR</code></li>
+    <li><code>balance.turb_PR → turb.PR</code></li>
+  </ul>
+
+  <p>看到三條上三角線就知道：「<strong>本案 Newton 在解 3 維方程式</strong>」。</p>
+
+  <h3>8.4 DESIGN ↔ OD 連線</h3>
+  <ul>
+    <li><code>DESIGN.comp.s_*</code>（map 縮放係數） → <code>OD0.comp.s_*</code>、<code>OD1.comp.s_*</code></li>
+    <li>同理 <code>turb</code>、<code>nozz</code></li>
+    <li><code>DESIGN.nozz.Throat:stat:area → OD*.balance.rhs:W</code>（噴嘴喉部鎖定）</li>
+  </ul>
+  <p>視覺呈現了「設計尺寸定了 → OD 不能改尺寸，只能改操作點」的工程慣例。</p>
+</section>
+
+<!-- ============ 9 ============ -->
+<section id="sec9">
+  <h2>9. 工程實例 / Engineering Scenarios</h2>
+
+  <h3>實例 A ─ 起飛推力規格驗證</h3>
+  <p>
+    <strong>需求：</strong>SLS 推力 11800 lbf，T4 不超過 2370 degR。
+  </p>
+  <ol>
+    <li>GUI：<code>alt=0, MN=1e-6, fn=11800, T4=2370</code></li>
+    <li>跑完看 summary，確認 Fn ≈ 11799.998 lbf。</li>
+    <li>對比 inputs.html，確認所有 _auto_ivc 都是規格內的值。</li>
+    <li>n2.html DESIGN 子區塊截圖貼進交付文件。</li>
+  </ol>
+
+  <h3>實例 B ─ 冷天 / 熱天靈敏度</h3>
+  <p>
+    本模型未直接暴露 <code>dT_amb</code>，但可以透過修改 <code>solve_problem</code> 加進去。
+    冷天 Tt 降低 → ρ 升高 → 同樣 W 對應更大壓縮功 → Fn 升高，TSFC 改善；熱天相反。
+    這是民航起飛限重最大的影響因子之一。
+  </p>
+
+  <h3>實例 C ─ 巡航油耗評估</h3>
+  <p>
+    <strong>需求：</strong>5000 ft / Mach 0.2 / 8000 lbf 巡航時的 TSFC。
+  </p>
+  <ol>
+    <li>查看 <code>comparison.png</code> 中 OD1 的 TSFC bar。</li>
+    <li>對比 OD0（地停）、DESIGN（SLS）三點 TSFC。</li>
+  </ol>
+
+  <h3>實例 D ─ 壓縮機選型 trade study</h3>
+  <p>
+    兩款候選壓縮機（PR 同為 13.5，eff 略異）。在 GUI 跑兩次，各自存 output/ 後 rename。
+    對比 <code>compressor_map_DESIGN_*.png</code> 上的工作點與 surge line 距離（surge margin）。
+  </p>
+
+  <h3>實例 E ─ 教學課堂</h3>
+  <ul>
+    <li>投影 n2.html，現場展開 DESIGN 與 OD1 比較 balance 連線差異。</li>
+    <li>讓學生過 inputs.html 找出「全部未連線輸入」並分類。</li>
+    <li>T-S / P-h 圖配 summary 是標準的循環分析作業。</li>
+  </ul>
+</section>
+
+<!-- ============ 10 ============ -->
+<section id="sec10">
+  <h2>10. 常見錯誤排除 / Troubleshooting</h2>
+
+  <h3>10.1 Newton 不收斂</h3>
+  <ul>
+    <li><strong>症狀：</strong>log 顯示 <code>NL: Newton Converged in N iterations</code> 失敗，
+        或出現 <code>RuntimeWarning: invalid value encountered in sqrt</code> 後 NaN。</li>
+    <li><strong>檢查：</strong>
+      <ol>
+        <li>n2.html 上三角是否有預期外的連線？多餘的回授會增加 Newton 維度。</li>
+        <li>inputs.html 過濾 <code>balance</code>，確認 LHS / RHS 對應的物理量合理（單位、量級）。</li>
+        <li>初始猜值 <code>prob['DESIGN.balance.FAR'] = 0.0175...</code> 是否過於偏離？</li>
+        <li>輸入 T4 是否高到讓燃燒室不可能達到（或低到 FAR 變負）？</li>
+      </ol>
+    </li>
+  </ul>
+
+  <h3>10.2 PySide6 報錯 <code>ModuleNotFoundError</code></h3>
+  <pre><code>uv pip install PySide6</code></pre>
+
+  <h3>10.3 圖表中文亂碼</h3>
+  <p>
+    GUI 啟動時會嘗試 <code>Microsoft YaHei → SimHei → Arial Unicode MS → DejaVu Sans</code> 字體。
+    若仍亂碼，安裝 <code>Noto Sans TC</code> 字體，並在 simple_turbojet.py 開頭調整
+    <code>matplotlib.rcParams['font.sans-serif']</code>。
+  </p>
+
+  <h3>10.4 <code>output/</code> 沒有出現 / 看不到舊版的 simple_turbojet_out</h3>
+  <p>
+    v0.2.0 後所有輸出都集中在 <code>tutorials/simple_turbojet/output/</code>。
+    如果在 repo 根目錄看到舊的 <code>simple_turbojet_out/</code>，那是早期版本的殘留，可手動刪除。
+  </p>
+
+  <h3>10.5 OpenMDAO <code>set_reports_dir has been removed</code></h3>
+  <p>
+    OpenMDAO 3.40 移除了該函式。本模組改採 <code>os.chdir(OUT_DIR)</code> +
+    <code>_flatten_openmdao_reports()</code> 把 reports 搬到 OUT_DIR。如未來 3.41+ 提供官方
+    redirect API，可改用之。
+  </p>
+
+  <h3>10.6 n2.html 打不開或卡頓</h3>
+  <p>
+    檔案 ~1 MB 含內嵌 JS，建議用 Chrome / Edge / Firefox 開啟。停用瀏覽器擴充
+    （特別是廣告封鎖）可改善載入速度。
+  </p>
+
+  <h3>10.7 站位標籤又重疊了</h3>
+  <p>
+    v0.2.0 已用 <code>STATION_LABEL_OFFSETS</code> 為每個站位安排固定方向。如果你大幅修改
+    了 PR、T4 等導致兩點極端靠近，可修改 <code>simple_turbojet.py</code> 內該常數的偏移向量。
+  </p>
+</section>
+
+<!-- ============ 11 ============ -->
+<section id="sec11">
+  <h2>11. 延伸閱讀 / Further Reading</h2>
+
+  <ul>
+    <li><strong>本模組原始碼：</strong><code>tutorials/simple_turbojet/simple_turbojet.py</code></li>
+    <li><strong>上游 pyCycle 範例：</strong><code>upstream/pyCycle/example_cycles/simple_turbojet.py</code></li>
+    <li><strong>OpenMDAO 文件：</strong>
+      <ul>
+        <li>N² Diagram、Reports System、BalanceComp</li>
+        <li><code>get_outputs_dir()</code> / <code>get_reports_dir()</code></li>
+      </ul>
+    </li>
+    <li><strong>熱力學教材：</strong>
+      <ul>
+        <li>Mattingly, <em>Elements of Propulsion: Gas Turbines and Rockets</em></li>
+        <li>Hill &amp; Peterson, <em>Mechanics and Thermodynamics of Propulsion</em></li>
+        <li>Cumpsty, <em>Jet Propulsion</em></li>
+      </ul>
+    </li>
+    <li><strong>站位編號規範：</strong>SAE ARP755D <em>Aircraft Propulsion System Performance Station Designation</em></li>
+  </ul>
+</section>
+
+<footer>
+  本文件為 <code>pyCycle_GUI</code> v0.2.0 提供的離線中英對照參考手冊。
+  完整變更紀錄請見專案根目錄的 <code>CHANGELOG.md</code>。
+</footer>
+
+</div>
+</body>
+</html>
