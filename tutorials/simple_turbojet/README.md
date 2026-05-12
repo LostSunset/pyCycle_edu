@@ -261,18 +261,76 @@ Ambient    Inlet      Compressor   Combustor    Turbine    Nozzle
 
 > **「這次模擬有哪些輸入？由誰驅動？預設值是什麼？」**
 
-### 2. 表格欄位
+### 2. 表格頂端篩選 / 排序列（重點）
 
-| 欄位 | 中文 | 說明 |
+打開 `inputs.html`，最上面那一排是 OpenMDAO 報告的 **篩選列 (filter row)**。
+每一欄都可以即時篩選 / 排序：
+
+```
+┌─────────────┬─────────────┬───────────────┬──────────────┬──────┬──────┬─────┬─────┬─────────┬─────────┐
+│ Input Name ▴│Source Name ▴│Source is IVC ▴│Source is DV ▴│Units │Shape │Tags │ Val │ Min Val │ Max Val │
+├─────────────┼─────────────┼───────────────┼──────────────┼──────┼──────┼─────┼─────┼─────────┼─────────┤
+│ [text box]  │ [text box]  │     [ ✓ ]     │    [ ☐ ]     │[box] │[box] │[box]│[box]│  [box]  │  [box]  │
+└─────────────┴─────────────┴───────────────┴──────────────┴──────┴──────┴─────┴─────┴─────────┴─────────┘
+```
+
+#### 逐欄使用方式
+
+| 欄位 | 中文 | 使用方式 |
 |---|---|---|
-| `name` / `varname` | 變數名稱 | 完整路徑，如 `DESIGN.balance.Fn_target` |
-| `units` | 單位 | OpenMDAO 字串：`lbf`、`degR`、`lbm/s`… |
-| `val` | 當下數值 | 通常是 1 元素 numpy array |
-| `source` | 來源 | 驅動這個輸入的 *輸出* 路徑；`_auto_ivc.*` = 未連線輸入 = 使用者可改 |
-| `prom_name` | 提升名稱 | 對外簡名，如 `Nmech` |
-| `min` / `max` | 上下限 | BalanceComp 解出變數常設此限制 |
+| **Input Name** | 輸入名稱（文字篩選） | 輸入框內打字即時過濾。打 `balance` 只看 BalanceComp 相關；打 `DESIGN.` 只看設計點；打 `:tot:T` 只看總溫。 |
+| **Source Name** | 來源名稱（文字篩選） | 驅動這個輸入的輸出路徑。打 `_auto_ivc` 列出所有未連線輸入；打 `perf` 列出由 Performance 驅動的輸入。 |
+| **Source is IVC** ✓/☐ | 來源為 IVC（勾選篩選） | **勾起來 = 只顯示「使用者可直接改的輸入」**。第一次打開時建議先勾這個，立刻看到完整 input deck。 |
+| **Source is DV** ✓/☐ | 來源為設計變數（勾選篩選） | 只顯示已用 `add_design_var` 註冊給最佳化器的變數。本教學模組沒做最佳化，所以勾起來會是空的 — 這是正常的。 |
+| **Units** | 單位（文字篩選） | 打 `lbf` 看推力相關、`degR` 看溫度、`psia` 看壓力、`lbm/s` 看流量。 |
+| **Shape** | 形狀（文字篩選） | numpy array 形狀。多數純量是 `(1,)`；向量化掃描會出現 `(10,)`、`(20,)`。 |
+| **Tags** | 標籤（文字篩選） | OpenMDAO 內部分組標籤（如 `cycle_param`）。教學時可忽略。 |
+| **Val** | 數值（文字篩選） | 打 `11800` 找 Fn target。 |
+| **Min Val / Max Val** | 下限 / 上限（文字篩選） | 打 `None` 找出沒設邊界的變數。 |
 
-### 3. 必看區段：`DESIGN.balance.*`
+#### 排序：點欄位標題的小三角形 ▲▼
+
+- 點 ▲ → 升冪
+- 再點 ▼ → 降冪
+- 常用：點 **Val** 找最大／最小值；點 **Units** 把同單位群組起來
+
+#### 三招黃金組合
+
+1. **「給我看本模型全部設計輸入」** → 勾 **Source is IVC ✓**，其他清空。
+2. **「找出 BalanceComp 解什麼方程式」** → Input Name 打 `DESIGN.balance.lhs`。
+3. **「DESIGN vs OD 的某變數差在哪」** → Input Name 打 `Nmech`，會同時看到三個工作點的差異。
+
+### 3. IVC 與 DV 是什麼（最常混淆）
+
+| 面向 | IVC（Independent Variable Component）<br>獨立變數元件 | DV（Design Variable）<br>設計變數 |
+|---|---|---|
+| 定義 | 「未被任何輸出連線」的輸入，由 OpenMDAO 自動建立的 `_auto_ivc` 容器供應。 | 已透過 `add_design_var` 註冊給 driver 的變數，告訴最佳化器「請動這個」。 |
+| 產生方式 | 自動：任何 `prob.set_val(...)` 或 `set_input_defaults(...)` 都會建。 | 手動：呼叫 `prob.model.add_design_var('var', lower=, upper=)`。 |
+| 角色 | 「使用者旋鈕」 | 「最佳化器旋鈕」 |
+| 必然關係 | 所有 DV 一定也是 IVC。 | 但 IVC 不一定是 DV（沒做最佳化時，所有 IVC 都不是 DV）。 |
+| 本教學模組 | 共 ~13 個（fc.alt、fc.MN、comp.PR、comp.eff、turb.eff、Fn_target、T4_target × 3 工作點）。 | 0 個（未做最佳化）。 |
+
+**白話對照**：IVC 是「可以動的旋鈕」；DV 是「現在這次計算 driver 要去動的旋鈕」。
+本 GUI 單純跑 single run 只用到 IVC；如果你日後在 `solve_problem` 內加上
+`prob.model.add_design_var('DESIGN.comp.PR', lower=8, upper=20)` 並改用最佳化 driver，
+那條 PR 才會升級成 DV，這時 `Source is DV ✓` 就會列出它。
+
+### 4. 表格欄位翻譯（速查）
+
+| 英文欄位 | 中文 | 對應 OpenMDAO 屬性 |
+|---|---|---|
+| Input Name | 輸入名稱 | 變數絕對路徑 |
+| Source Name | 來源名稱 | connect / 自動連線的輸出 |
+| Source is IVC | 來源為 IVC | `True` = 來自 `_auto_ivc` |
+| Source is DV | 來源為設計變數 | `True` = 已 `add_design_var` |
+| Units | 單位 | OpenMDAO units string |
+| Shape | 陣列形狀 | numpy `ndarray.shape` |
+| Tags | 標籤 | 內部分組標籤 |
+| Val | 數值 | 當下值 |
+| Min Val | 下限 | `lower` |
+| Max Val | 上限 | `upper` |
+
+### 5. 必看區段：`DESIGN.balance.*`
 
 過濾 `DESIGN.balance`，會看到：
 
@@ -292,7 +350,7 @@ DESIGN.balance.lhs:turb_PR  val=[…]         units=hp      source=DESIGN.shaft.
 | `FAR` | `burner.Fl_O:tot:T` 燃燒室出口溫度 | = | `T4_target = 2370 degR` |
 | `turb_PR` | `shaft.pwr_net` 軸功率 | = | `0` |
 
-### 4. 三大實際工程應用
+### 6. 三大實際工程應用
 
 #### 例 1：抓單位錯置（lbf vs N）
 

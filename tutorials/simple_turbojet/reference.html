@@ -436,8 +436,18 @@
         <td>變數名前綴。<code>Fl_O:tot:T</code> 是總溫，<code>Fl_O:stat:T</code> 是靜溫。</td></tr>
       <tr><td>lhs / rhs</td><td>Left- / Right-Hand Side</td><td>方程式左式 / 右式</td>
         <td>BalanceComp 的方程式兩邊；Newton 求解 LHS = RHS。</td></tr>
-      <tr><td>IVC</td><td>IndepVarComp</td><td>獨立變數元件</td>
-        <td>OpenMDAO 自動建立的「未連線輸入」容器，名稱為 <code>_auto_ivc</code>。</td></tr>
+      <tr><td>IVC</td><td>IndepVarComp <br>（Independent Variable Component）</td>
+        <td>獨立變數元件</td>
+        <td>OpenMDAO 自動建立的「未連線輸入」容器，名稱為 <code>_auto_ivc</code>。
+        在 <code>inputs.html</code> 中，<strong>Source is IVC = ✓</strong> 代表這個輸入沒有被任何元件輸出驅動，
+        其值來自獨立變數元件，可以被使用者改動或由 driver 視為自由變數。
+        <br><em>白話：「這是使用者能直接調整的旋鈕」。</em></td></tr>
+      <tr><td>DV</td><td>Design Variable</td>
+        <td>設計變數</td>
+        <td>已用 <code>prob.model.add_design_var('var_name')</code> 註冊到 OpenMDAO driver 的變數。
+        最佳化器（如 SLSQP、SciPyOptimizeDriver）會自動搜尋 DV 的最佳值。
+        在 <code>inputs.html</code> 中，<strong>Source is DV = ✓</strong> 代表 driver 把它當成可調參數。
+        <br><em>白話：「最佳化器要動的旋鈕」。本教學模組目前未做最佳化，所以全部 DV 都為空。</em></td></tr>
       <tr><td>BC</td><td>BalanceComp</td><td>平衡元件</td>
         <td>讓 Newton solver 解一條 implicit equation 的元件，常用於熱循環收斂。</td></tr>
     </tbody>
@@ -730,26 +740,200 @@
     「<strong>這次跑的模型，總共有哪些輸入？它們被誰驅動？預設值是什麼？</strong>」
   </p>
 
-  <h3>7.2 表格欄位翻譯</h3>
+  <h3>7.2 表格頂端篩選 / 排序列（重點）</h3>
+
+  <p>
+    開啟 <code>inputs.html</code> 後，每一欄標題下方都有一個輸入框或勾選框，這一整排
+    叫做 <strong>篩選列 (filter row)</strong>。配合右上角的小三角形（排序），可以快速
+    在 200+ 筆輸入中找出你要看的那幾筆。
+  </p>
+
+  <div class="station-diagram">
+┌──────────────┬──────────────┬───────────────┬──────────────┬───────┬────────┬──────┬─────┬─────────┬─────────┐
+│ Input Name ▴ │ Source Name▴ │ Source is IVC▴│ Source is DV▴│Units▴ │ Shape ▴│ Tags▴│ Val▴│ Min Val ▴│ Max Val ▴│
+├──────────────┼──────────────┼───────────────┼──────────────┼───────┼────────┼──────┼─────┼─────────┼─────────┤
+│ [text box]   │ [text box]   │      [ ✓ ]    │     [ ☐ ]    │[box]  │ [box]  │[box] │[box]│  [box]  │  [box]  │
+└──────────────┴──────────────┴───────────────┴──────────────┴───────┴────────┴──────┴─────┴─────────┴─────────┘
+  </div>
+
+  <h4>逐欄完整解釋</h4>
   <table>
-    <thead><tr><th>欄位</th><th>正體中文</th><th>說明</th></tr></thead>
+    <thead><tr><th>欄位 / 篩選框</th><th>中文</th><th>使用方式 / 工程意義</th></tr></thead>
     <tbody>
-      <tr><td>name / varname</td><td>變數名稱</td>
-        <td>完整路徑，如 <code>DESIGN.balance.Fn_target</code>。</td></tr>
-      <tr><td>units</td><td>單位</td>
-        <td>OpenMDAO 字串，如 <code>lbf</code>、<code>degR</code>、<code>lbm/s</code>。</td></tr>
-      <tr><td>val</td><td>數值</td>
-        <td>當下的陣列值。</td></tr>
-      <tr><td>source</td><td>來源</td>
-        <td>驅動這個輸入的輸出路徑。<code>_auto_ivc.*</code> 代表未連線輸入（使用者可改）。</td></tr>
-      <tr><td>prom_name</td><td>提升名稱</td>
-        <td>對外（promotes）使用的簡名，例如 <code>Nmech</code>。</td></tr>
-      <tr><td>min / max</td><td>下限 / 上限</td>
-        <td>BalanceComp 解出的變數常設此限制（如 <code>turb_PR ∈ [1.001, 8]</code>）。</td></tr>
+      <tr>
+        <td><strong>Input Name</strong><br>(text filter)</td>
+        <td>輸入名稱<br>（文字篩選）</td>
+        <td>
+          輸入框內打字會即時過濾。常用：
+          <ul>
+            <li><code>balance</code> → 只看 BalanceComp 相關</li>
+            <li><code>DESIGN.</code> → 只看設計點</li>
+            <li><code>Fl_I</code> → 只看流動接口</li>
+            <li><code>:tot:T</code> → 只看總溫</li>
+          </ul>
+          完整路徑，例如 <code>DESIGN.balance.Fn_target</code>。
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Source Name</strong><br>(text filter)</td>
+        <td>來源名稱<br>（文字篩選）</td>
+        <td>
+          驅動這個輸入的輸出路徑。打 <code>_auto_ivc</code> 列出全部未連線輸入；
+          打 <code>balance</code> 列出全部由 BalanceComp 輸出驅動的輸入；
+          打 <code>perf</code> 列出由 Performance 輸出驅動的輸入。
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Source is IVC</strong> ✓ / ☐<br>(checkbox filter)</td>
+        <td>來源為 IVC<br>（勾選篩選）</td>
+        <td>
+          <strong>勾選 ✓</strong>：只顯示「來源是 <code>_auto_ivc</code>」的列——
+          也就是 <em>未連線、使用者可直接改</em> 的輸入。<br>
+          <strong>不勾 ☐</strong>：顯示所有輸入（含已連線的）。<br>
+          <em>實務：第一次打開時就勾起來，立刻看到「本模型的全部設計輸入」。</em>
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Source is DV</strong> ✓ / ☐<br>(checkbox filter)</td>
+        <td>來源為設計變數<br>（勾選篩選）</td>
+        <td>
+          <strong>勾選 ✓</strong>：只顯示已透過 <code>add_design_var</code>
+          註冊給 driver 的變數。<br>
+          本教學模組沒有跑最佳化（沒呼叫 <code>add_design_var</code>），所以勾起來會
+          <em>列表是空的</em>，這是正常的。<br>
+          如果你日後在 <code>solve_problem</code> 內加上：
+          <pre><code>prob.model.add_design_var('DESIGN.comp.PR', lower=8, upper=20)</code></pre>
+          再跑一次，這個篩選會列出該變數。
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Units</strong><br>(text filter)</td>
+        <td>單位<br>（文字篩選）</td>
+        <td>
+          OpenMDAO 字串。常用篩選：
+          <ul>
+            <li><code>lbf</code> → 推力相關</li>
+            <li><code>degR</code> → 溫度相關</li>
+            <li><code>psia</code> → 壓力相關</li>
+            <li><code>lbm/s</code> → 流量相關</li>
+          </ul>
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Shape</strong><br>(text filter)</td>
+        <td>形狀<br>（文字篩選）</td>
+        <td>
+          變數的 numpy array 形狀。多數純量是 <code>(1,)</code>。例如向量化的飛行包線
+          掃描會出現 <code>(10,)</code>、<code>(20,)</code>。
+          打 <code>(3,)</code> 找出 3 元素陣列輸入。
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Tags</strong><br>(text filter)</td>
+        <td>標籤<br>（文字篩選）</td>
+        <td>
+          OpenMDAO 內部標籤（如 <code>cycle_param</code>、<code>flow_solver</code>），
+          用於進階分組與工具識別。教學時可忽略。
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Val</strong><br>(text filter)</td>
+        <td>數值<br>（文字篩選）</td>
+        <td>
+          當下的陣列值。文字篩選會比對字串，例如打 <code>11800</code> 找 Fn target。
+        </td>
+      </tr>
+      <tr>
+        <td><strong>Min Val / Max Val</strong><br>(text filter)</td>
+        <td>下限 / 上限<br>（文字篩選）</td>
+        <td>
+          BalanceComp 解出變數常設此限制（如 <code>turb_PR ∈ [1.001, 8]</code>）。
+          打 <code>None</code> 找出沒設邊界的變數。
+        </td>
+      </tr>
     </tbody>
   </table>
 
-  <h3>7.3 三大實例</h3>
+  <h4>排序：點欄位標題的小三角形 ▲▼</h4>
+  <ul>
+    <li>點一下 ▲ → 升冪</li>
+    <li>再點一下 ▼ → 降冪</li>
+    <li>多欄組合：先點次要欄、再點主要欄</li>
+    <li>常用：點 <strong>Val</strong> 找最大 / 最小值；點 <strong>Units</strong> 把同單位群組起來</li>
+  </ul>
+
+  <h4>三招黃金組合（最常用）</h4>
+  <ol>
+    <li>
+      <strong>「給我看本模型的所有設計輸入」</strong><br>
+      → 勾 <strong>Source is IVC ✓</strong>，其餘清空。一秒得到完整 input deck。
+    </li>
+    <li>
+      <strong>「找出某個 BalanceComp 解什麼方程式」</strong><br>
+      → Input Name 打 <code>DESIGN.balance.lhs</code>。會看到三條方程式的左式與來源。
+    </li>
+    <li>
+      <strong>「DESIGN vs OD 的某個變數差在哪」</strong><br>
+      → Input Name 打 <code>Nmech</code>。會同時看到 DESIGN（_auto_ivc）與 OD（balance 驅動）的差異。
+    </li>
+  </ol>
+
+  <h3>7.3 IVC vs DV 的差別（最常混淆）</h3>
+
+  <table>
+    <thead><tr><th>面向</th><th>IVC（Independent Variable Component）</th><th>DV（Design Variable）</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>定義</td>
+        <td>「未被任何輸出連線」的輸入，由 OpenMDAO 自動建立的 <code>_auto_ivc</code> 容器供應。</td>
+        <td>已透過 <code>add_design_var</code> 註冊給 driver 的變數，告訴最佳化器「請動這個」。</td>
+      </tr>
+      <tr>
+        <td>產生方式</td>
+        <td>自動：任何 <code>prob.set_val(...)</code> 或 <code>set_input_defaults(...)</code> 都會建。</td>
+        <td>手動：呼叫 <code>prob.model.add_design_var('var')</code>。</td>
+      </tr>
+      <tr>
+        <td>角色</td>
+        <td>「使用者旋鈕」</td>
+        <td>「最佳化器旋鈕」</td>
+      </tr>
+      <tr>
+        <td>必然關係</td>
+        <td>所有 DV 一定也是 IVC（因為必須未連線才能被改）。</td>
+        <td>但 IVC 不一定是 DV（沒做最佳化時，所有 IVC 都不是 DV）。</td>
+      </tr>
+      <tr>
+        <td>在本教學模組</td>
+        <td>共 ~13 個（fc.alt、fc.MN、comp.PR、comp.eff、turb.eff、Fn_target、T4_target × 3 工作點）。</td>
+        <td>0 個（未做最佳化）。</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout tip">
+    <strong>白話對照：</strong>IVC 是「可以動的旋鈕」；DV 是「現在這次計算 driver 要去動的旋鈕」。
+    GUI 跑 single run 只用 IVC；如果你跑 <code>SLSQP.minimize</code> 找最佳 PR，那條 PR 才會升級成 DV。
+  </div>
+
+  <h3>7.4 表格欄位翻譯（速查）</h3>
+  <table>
+    <thead><tr><th>欄位</th><th>中文</th><th>對應 OpenMDAO 屬性</th></tr></thead>
+    <tbody>
+      <tr><td>Input Name</td><td>輸入名稱</td><td>變數絕對路徑</td></tr>
+      <tr><td>Source Name</td><td>來源名稱</td><td>對應 connect / 自動連線的輸出</td></tr>
+      <tr><td>Source is IVC</td><td>來源為 IVC</td><td>true 表示來自 <code>_auto_ivc</code></td></tr>
+      <tr><td>Source is DV</td><td>來源為設計變數</td><td>true 表示已 <code>add_design_var</code></td></tr>
+      <tr><td>Units</td><td>單位</td><td>OpenMDAO units string</td></tr>
+      <tr><td>Shape</td><td>陣列形狀</td><td>numpy ndarray.shape</td></tr>
+      <tr><td>Tags</td><td>標籤</td><td>內部分組標籤</td></tr>
+      <tr><td>Val</td><td>數值</td><td>當下值</td></tr>
+      <tr><td>Min Val</td><td>下限</td><td><code>lower</code></td></tr>
+      <tr><td>Max Val</td><td>上限</td><td><code>upper</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3>7.5 三大實例</h3>
 
   <h4>例 1：抓單位錯置（lbf vs N）</h4>
   <p>
