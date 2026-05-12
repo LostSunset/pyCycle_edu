@@ -11,6 +11,9 @@
 
 - Run `./scripts/verify-upstream-submodule.ps1` before committing.
 - Record meaningful development tasks in `docs/dev-log/`.
+- User preference: when the user asks to commit/push this repository's work,
+  push directly to `main` instead of leaving changes only on a feature branch,
+  as long as the requested push is consistent with repository safety checks.
 - Store or record external sources in `Reference_sources/` before using them for validation.
 - Every time a PPTX is generated or modified, export it to PNG preview images and visually inspect the slides before claiming the deck is ready. Check for text outside frames, clipped text, distorted images, overly small text, and poor text/image balance.
 - Never push API keys, credentials, `.env`, `.pem`, `.key`, or any private user data. `.gitignore` codifies the patterns; scan the staged tree before any push.
