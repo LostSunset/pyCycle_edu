@@ -58,6 +58,7 @@ PySide6 GUI，並附有雙語使用者文件。
 ```powershell
 uv venv --python 3.12 --clear .venv
 uv sync --python 3.12
+uv pip install om-pycycle  # 安裝 pyCycle / OpenMDAO 套件
 uv pip install PySide6  # tutorial GUI 需要
 ```
 
@@ -180,6 +181,7 @@ Use Python 3.12 through `uv`.
 ```powershell
 uv venv --python 3.12 --clear .venv
 uv sync --python 3.12
+uv pip install om-pycycle  # install the pyCycle / OpenMDAO package
 uv pip install PySide6  # required for the tutorial GUI
 ```
 
